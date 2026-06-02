@@ -1,0 +1,9 @@
+{
+    "Group": "HytaleModding",
+    "Name": "RPGmod",
+    "Version": "1.0",
+    "Authors": [],
+    "DisabledByDefault": false,
+    "IncludesAssetPack": true,
+    "Main": "org.example.RPGmod"
+}

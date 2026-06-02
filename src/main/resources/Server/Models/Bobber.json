@@ -1,0 +1,12 @@
+{
+  "Id": "Bobber",
+  "Model": "Items/Tools/Bobber/Fishing_Bobber.blockymodel",
+  "Texture": "Items/Tools/Bobber/Fishing_Bobber_Texture.png",
+  "HitBox": {
+    "Max": {
+      "Z": 0.25,
+      "Y": 0.25,
+      "X": 0.25
+    }
+  }
+}
