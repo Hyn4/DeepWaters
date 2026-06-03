@@ -56,14 +56,14 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
 
         movementManager.update(player.getPacketHandler());
 
-        PageManager pageManager = player.getComponent(Player.getComponentType()).getPageManager();
+        /*PageManager pageManager = player.getComponent(Player.getComponentType()).getPageManager();
 
         FishingPage fishingPage = new FishingPage(player, pRef -> {
             // Trigger your event!
             StopFishingEvent.dispatch(pRef.getReference());
         });
 
-        pageManager.openCustomPage(event.playerRef(), store, fishingPage);
+        pageManager.openCustomPage(event.playerRef(), store, fishingPage);*/
 
         player.sendMessage(Message.raw("Fishing!"));
         rpg.setFishing(true);

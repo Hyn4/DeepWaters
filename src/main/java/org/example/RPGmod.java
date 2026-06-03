@@ -7,6 +7,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.example.commands.RpgCommand;
 import org.example.components.BobberPhysicsComponent;
+import org.example.components.FishingComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.*;
 import org.example.handlers.*;
@@ -38,6 +39,9 @@ public class RPGmod extends JavaPlugin {
                 BobberPhysicsComponent.CODEC);
         BobberPhysicsComponent.setComponentType(bobberPhysicsType);
 
+        var fishingType = registry.registerComponent(FishingComponent.class, FishingComponent::new);
+        FishingComponent.setComponentType(fishingType);
+
         registry.registerSystem(new PlayerJoinSystem());
         registry.registerSystem(new XPGainSystem());
         registry.registerSystem(new BobberPhysicsSystem());
@@ -47,6 +51,7 @@ public class RPGmod extends JavaPlugin {
         getEventRegistry().register(RemoveXPEvent.class, new RemoveXPHandler());
         getEventRegistry().register(StartFishingEvent.class, new StartFishingHandler());
         getEventRegistry().register(StopFishingEvent.class, new StopFishingHandler());
+        getEventRegistry().register(CatchFishEvent.class, new CatchFishHandler());
 
         getCommandRegistry().registerCommand(new RpgCommand());
 

@@ -13,6 +13,7 @@ import com.hypixel.hytale.server.core.modules.physics.component.PhysicsValues;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import org.example.components.BobberPhysicsComponent;
 import org.example.components.PlayerRPGComponent;
+import org.example.events.CatchFishEvent;
 import org.example.events.StopFishingEvent;
 import org.joml.Vector3d;
 import com.hypixel.hytale.protocol.InteractionType;
@@ -126,6 +127,11 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
 
             ref.sendMessage(Message.raw("Checkpoint 6"));
         }else{
+
+            if(rpgComponent.isFishBiting()){
+                ref.sendMessage(Message.raw("CATCH!"));
+                CatchFishEvent.dispatch(playerRef);
+            }
 
             ref.sendMessage(Message.raw("Removing bobber"));
 

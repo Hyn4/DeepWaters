@@ -6,9 +6,11 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.modules.entity.component.BoundingBox;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -17,6 +19,8 @@ import org.example.components.BobberPhysicsComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.StartFishingEvent;
 import org.joml.Vector3d;
+
+import java.util.Random;
 
 
 public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
@@ -27,7 +31,15 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         return Query.and(BobberPhysicsComponent.getComponentType());
     }
 
-    float timeInWater = 0f;
+    private final Random random = new Random();
+
+    private final float REEL_IN_TIME_WINDOW = 2f;
+    private final float MAX_CHATCH_TIME = 15f;
+    private final float MIN_CATCH_TIME = 5f;
+    private float timeTilCatch = 0f;
+    private float timeInWater = 0f;
+    private float timeFishing = 0f;
+
 
     @Override
     public void tick(float dt, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
@@ -62,13 +74,28 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
             velocity.z = 0;
             if(!playerIsFishing){
                 timeInWater += dt;
+            }else {
+                timeFishing += dt;
             }
         }
 
 
         if(timeInWater >= 1.5f && timeInWater <= 2.0f && !playerIsFishing){
             StartFishingEvent.dispatch(playerRef);
+            timeTilCatch = setTimeTilCatch();
             timeInWater = 0f;
+        }
+
+        if(timeFishing >= timeTilCatch && playerIsFishing){
+            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FISGADA!!!!! %f sec".formatted(timeTilCatch)));
+            store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(true);
+            timeTilCatch = setTimeTilCatch();
+            timeFishing = 0f;
+        }
+
+        if(store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishBiting() && timeFishing >= REEL_IN_TIME_WINDOW){
+            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FUGIU!!!!!"));
+            store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(false);
         }
 
         Vector3d scaledVel = new Vector3d();
@@ -80,7 +107,9 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
 
     }
 
-
+    private float setTimeTilCatch(){
+        return MIN_CATCH_TIME + random.nextFloat() * (MAX_CHATCH_TIME - MIN_CATCH_TIME);
+    }
 
 
 

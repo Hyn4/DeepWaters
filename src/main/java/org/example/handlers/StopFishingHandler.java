@@ -54,6 +54,7 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
         }
 
         rpg.setBobberId(null);
+        rpg.setFishBiting(false);
 
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());
         movementManager.applyDefaultSettings();

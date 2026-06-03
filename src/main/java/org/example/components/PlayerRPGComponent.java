@@ -35,13 +35,21 @@ public class PlayerRPGComponent implements Component<EntityStore>{
                             new KeyedCodec<>("BobberRef",Codec.UUID_BINARY),
                             (component, value) -> component.bobberId = value,
                             component -> component.bobberId
-                    ).add().append(
+                    ).add()
+                    .append(
                             new KeyedCodec<>("IsFishing",Codec.BOOLEAN),
                             (component, value) -> component.isFishing = value,
                             component -> component.isFishing
                     ).add()
+                    .append(
+                            new KeyedCodec<>("FishBiting",Codec.BOOLEAN),
+                            (component, value) -> component.fishBiting = value,
+                            component -> component.fishBiting
+                    ).add()
                     .build();
 
+
+    private boolean fishBiting = false;
 
     private long totalExperience = 0;
 
@@ -61,6 +69,14 @@ public class PlayerRPGComponent implements Component<EntityStore>{
 
     public void setFishing(boolean fishing) {
         isFishing = fishing;
+    }
+
+    public boolean isFishBiting() {
+        return fishBiting;
+    }
+
+    public void setFishBiting(boolean fishBiting) {
+        this.fishBiting = fishBiting;
     }
 
     public UUID getBobberId() {
