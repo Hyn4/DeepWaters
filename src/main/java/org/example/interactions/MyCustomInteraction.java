@@ -129,26 +129,6 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
 
             ref.sendMessage(Message.raw("Removing bobber"));
 
-            UUID bobberUuid = rpgComponent.getBobberId();
-
-            final Ref<EntityStore> bobberRef = entityStore.getRefFromUUID(bobberUuid);
-
-            try {
-                commandBuffer.getExternalData().getWorld().execute(() -> {
-                    if (!bobberRef.isValid()) {
-                        return;
-                    }
-                    try {
-                        entityStore.getStore().removeEntity(bobberRef, RemoveReason.REMOVE);
-                    } catch (Exception e) {
-                        ref.sendMessage(Message.raw(e.toString()));
-                    }
-                });
-            } catch (Exception e) {
-                ref.sendMessage(Message.raw("Failed to enqueue bobber remove"));
-            }
-
-            rpgComponent.setBobberId(null);
             StopFishingEvent.dispatch(playerRef);
         }
 

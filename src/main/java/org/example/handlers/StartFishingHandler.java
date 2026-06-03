@@ -2,16 +2,20 @@ package org.example.handlers;
 
 import com.hypixel.hytale.protocol.*;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
+import com.hypixel.hytale.protocol.packets.interface_.CustomPage;
+import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
+import com.hypixel.hytale.protocol.packets.interface_.Page;
+import com.hypixel.hytale.protocol.packets.interface_.SetPage;
+import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.entity.entities.player.CameraManager;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
-import com.hypixel.hytale.server.core.entity.movement.MovementStatesComponent;
+import com.hypixel.hytale.server.core.entity.entities.player.pages.PageManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import org.example.Pages.FishingPage;
 import org.example.components.PlayerRPGComponent;
-import org.example.events.GiveXPEvent;
-import org.example.events.LevelUpEvent;
 import org.example.events.StartFishingEvent;
-import org.joml.Vector2f;
+import org.example.events.StopFishingEvent;
 
 import java.util.function.Consumer;
 
@@ -45,19 +49,21 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         // 4. Disable rolling
         movementSettings.minFallSpeedToEngageRoll = Float.MAX_VALUE;
 
-        ServerCameraSettings cameraSettings = new ServerCameraSettings();
 
-        cameraSettings.lookMultiplier = new Vector2f(0,0);
-        cameraSettings.allowPitchControls = false;
-        cameraSettings.rotationType = RotationType.Custom;
-        cameraSettings.applyLookType = ApplyLookType.Rotation;
-        cameraSettings.rotation = new Direction(0.5f,0.5f,0.5f);
-        cameraSettings.distance = 4.0f;
+        SetServerCamera packet = new SetServerCamera(ClientCameraView.ThirdPerson, true, new ServerCameraSettings());
 
-        SetServerCamera packet = new SetServerCamera(ClientCameraView.ThirdPerson, true, cameraSettings);
+        player.getPacketHandler().writeNoCache(packet);
 
         movementManager.update(player.getPacketHandler());
-        player.getPacketHandler().writeNoCache(packet);
+
+        PageManager pageManager = player.getComponent(Player.getComponentType()).getPageManager();
+
+        FishingPage fishingPage = new FishingPage(player, pRef -> {
+            // Trigger your event!
+            StopFishingEvent.dispatch(pRef.getReference());
+        });
+
+        pageManager.openCustomPage(event.playerRef(), store, fishingPage);
 
         player.sendMessage(Message.raw("Fishing!"));
         rpg.setFishing(true);
