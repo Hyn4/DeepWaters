@@ -49,6 +49,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         Velocity velocityComp = archetypeChunk.getComponent(index, Velocity.getComponentType());
         BoundingBox boundingBoxComponent = archetypeChunk.getComponent(index, BoundingBox.getComponentType());
         BobberPhysicsComponent bobberPhysicsComponent = archetypeChunk.getComponent(index, BobberPhysicsComponent.getComponentType());
+        if(bobberPhysicsComponent.getPlayerId() == null) return;
         Ref<EntityStore> playerRef = store.getExternalData().getRefFromUUID(bobberPhysicsComponent.getPlayerId());
         boolean playerIsFishing = store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishing();
 
