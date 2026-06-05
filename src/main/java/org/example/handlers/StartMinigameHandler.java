@@ -1,0 +1,74 @@
+package org.example.handlers;
+
+
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.ItemUtils;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.npc.util.InventoryHelper;
+import org.example.components.BobberPhysicsComponent;
+import org.example.components.FishComponent;
+import org.example.components.FishermanComponent;
+import org.example.components.PlayerRPGComponent;
+import org.example.events.CatchFishEvent;
+import org.example.events.GiveXPEvent;
+import org.example.events.StartMinigameEvent;
+import org.example.events.StopFishingEvent;
+import org.joml.Vector3d;
+
+import java.util.function.Consumer;
+
+public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
+
+    @Override
+    public void accept(StartMinigameEvent event){
+        if (!event.player().isValid()) return;
+        var store = event.player().getStore();
+        var playerRef = store.getComponent(event.player(), PlayerRef.getComponentType());
+        var commandBuffer = event.commandBuffer();
+
+        playerRef.sendMessage(Message.raw("Checkpoint 1"));
+
+        var rpgComponent = store.getComponent(event.player(), PlayerRPGComponent.getComponentType());
+
+        playerRef.sendMessage(Message.raw("Checkpoint 2"));
+
+        var bobberRef = store.getExternalData().getRefFromUUID(rpgComponent.getBobberId());
+
+        if(!bobberRef.isValid()){
+            playerRef.sendMessage(Message.raw("DEU MERDA no bobberRef"));
+            StopFishingEvent.dispatch(event.player());
+            return;
+        }
+
+        playerRef.sendMessage(Message.raw("Checkpoint 3"));
+
+        var bobberPyhsicsComponent = store.getComponent(bobberRef, BobberPhysicsComponent.getComponentType());
+
+        if(bobberPyhsicsComponent == null){
+            playerRef.sendMessage(Message.raw("DEU MERDA no bobberphysics"));
+            StopFishingEvent.dispatch(event.player());
+            return;
+        }
+
+        var playerId = bobberPyhsicsComponent.getPlayerId();
+
+        playerRef.sendMessage(Message.raw("Checkpoint 4"));
+
+        //coloca o fish component e passa o playerID
+        commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(), new FishComponent(playerId));
+
+
+        playerRef.sendMessage(Message.raw("Checkpoint 7"));
+
+
+        //tira o bobber physics system
+        commandBuffer.removeComponent(bobberRef, BobberPhysicsComponent.getComponentType());
+
+        playerRef.sendMessage(Message.raw("Checkpoint 8"));
+
+        rpgComponent.setFishBiting(false);
+    }
+
+}

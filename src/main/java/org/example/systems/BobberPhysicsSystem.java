@@ -16,6 +16,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.example.components.BobberPhysicsComponent;
+import org.example.components.FishComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.StartFishingEvent;
 import org.joml.Vector3d;
@@ -45,6 +46,8 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
     public void tick(float dt, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
                      @NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
 
+
+        //pega as coisa
         TransformComponent transform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
         Velocity velocityComp = archetypeChunk.getComponent(index, Velocity.getComponentType());
         BoundingBox boundingBoxComponent = archetypeChunk.getComponent(index, BoundingBox.getComponentType());
@@ -53,7 +56,8 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         Ref<EntityStore> playerRef = store.getExternalData().getRefFromUUID(bobberPhysicsComponent.getPlayerId());
         boolean playerIsFishing = store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishing();
 
-        if (transform == null || velocityComp == null || boundingBoxComponent == null || bobberPhysicsComponent == null) return;
+        if (transform == null || velocityComp == null || boundingBoxComponent == null) return;
+
 
 
         World world = store.getExternalData().getWorld();
@@ -65,6 +69,8 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         int fluidId = world.getFluidId((int)position.x, (int)Math.floor(position.y), (int)position.z);
         boolean inWater = (fluidId == 7||fluidId == 8||fluidId == 12);
 
+
+        //seta vel e timers
         if(!inWater){
             velocity.y -= 25.0 * dt;
             velocity.x *= 0.99;
@@ -81,31 +87,35 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         }
 
 
+        //start fishing event
         if(timeInWater >= 1.5f && timeInWater <= 2.0f && !playerIsFishing){
             StartFishingEvent.dispatch(playerRef);
             timeTilCatch = setTimeTilCatch();
             timeInWater = 0f;
         }
 
+        //peixe mordeu
         if(timeFishing >= timeTilCatch && playerIsFishing){
-            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FISGADA!!!!! %f sec".formatted(timeTilCatch)));
+            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("MORDEU!!!!! %f sec".formatted(timeTilCatch)));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(true);
             timeTilCatch = setTimeTilCatch();
             timeFishing = 0f;
         }
 
+        //peixe fugiu
         if(store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishBiting() && timeFishing >= REEL_IN_TIME_WINDOW){
             store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FUGIU!!!!!"));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(false);
         }
 
+
+        //atualiza posição
         Vector3d scaledVel = new Vector3d();
         velocity.mul(dt, scaledVel);
         position.add(scaledVel);
 
         velocityComp.set(velocity);
         transform.setPosition(position);
-
     }
 
     private float setTimeTilCatch(){

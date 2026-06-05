@@ -1,18 +1,19 @@
 package org.example;
 
-import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.example.commands.RpgCommand;
 import org.example.components.BobberPhysicsComponent;
-import org.example.components.FishingComponent;
+import org.example.components.FishComponent;
+import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.*;
 import org.example.handlers.*;
+import org.example.interactions.FishingInteraction;
 import org.example.interactions.MyCustomInteraction;
 import org.example.systems.BobberPhysicsSystem;
+import org.example.systems.FishingSystem;
 import org.example.systems.PlayerJoinSystem;
 import org.example.systems.XPGainSystem;
 
@@ -39,12 +40,16 @@ public class RPGmod extends JavaPlugin {
                 BobberPhysicsComponent.CODEC);
         BobberPhysicsComponent.setComponentType(bobberPhysicsType);
 
-        var fishingType = registry.registerComponent(FishingComponent.class, FishingComponent::new);
-        FishingComponent.setComponentType(fishingType);
+        var fishType = registry.registerComponent(FishComponent.class, FishComponent::new);
+        FishComponent.setComponentType(fishType);
+
+        var fishermanType = registry.registerComponent(FishermanComponent.class, FishermanComponent::new);
+        FishermanComponent.setComponentType(fishermanType);
 
         registry.registerSystem(new PlayerJoinSystem());
         registry.registerSystem(new XPGainSystem());
         registry.registerSystem(new BobberPhysicsSystem());
+        registry.registerSystem(new FishingSystem());
 
         getEventRegistry().register(GiveXPEvent.class, new GiveXPHandler());
         getEventRegistry().register(LevelUpEvent.class, new LevelUpHandler());
@@ -52,10 +57,12 @@ public class RPGmod extends JavaPlugin {
         getEventRegistry().register(StartFishingEvent.class, new StartFishingHandler());
         getEventRegistry().register(StopFishingEvent.class, new StopFishingHandler());
         getEventRegistry().register(CatchFishEvent.class, new CatchFishHandler());
+        getEventRegistry().register(StartMinigameEvent.class, new StartMinigameHandler());
 
         getCommandRegistry().registerCommand(new RpgCommand());
 
         getCodecRegistry(Interaction.CODEC).register("my_custom_interaction_id", MyCustomInteraction.class, MyCustomInteraction.CODEC);
+        getCodecRegistry(Interaction.CODEC).register("fishing_interaction_id", FishingInteraction.class, FishingInteraction.CODEC);
 
 
     }

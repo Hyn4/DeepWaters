@@ -12,8 +12,10 @@ import com.hypixel.hytale.server.core.modules.entity.tracker.NetworkId;
 import com.hypixel.hytale.server.core.modules.physics.component.PhysicsValues;
 import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
 import org.example.components.BobberPhysicsComponent;
+import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.CatchFishEvent;
+import org.example.events.StartMinigameEvent;
 import org.example.events.StopFishingEvent;
 import org.joml.Vector3d;
 import com.hypixel.hytale.protocol.InteractionType;
@@ -57,12 +59,8 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
             ref.sendMessage(Message.raw("Player sem UUID"));
             return;
         }
-        ref.sendMessage(Message.raw("Player UUID: %s".formatted(playerUuid.toString())));
-
 
         if(commandBuffer == null || playerRef==null || heldItem==null || ref==null || player==null || rpgComponent == null) return;
-        ref.sendMessage(Message.raw("Checkpoint 1"));
-
 
         if(rpgComponent.getBobberId() == null) {
             TransformComponent playerTransformComponent = playerRef.getStore().getComponent(playerRef, TransformComponent.getComponentType());
@@ -81,8 +79,6 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
 
             if (playerTransformComponent == null || playerTransform == null || bobbleSpawnPos == null || playerLookDir == null || playerHead == null)
                 return;
-            ref.sendMessage(Message.raw("Checkpoint 2"));
-
 
             Holder<EntityStore> bobberHolder = EntityStore.REGISTRY.newHolder();
 
@@ -96,15 +92,11 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
 
             //if(playerTransformComponent == null || playerTransform==null || bobbleSpawnPos==null || playerLookDir==null || playerHead==null ) return;
 
-            ref.sendMessage(Message.raw("Checkpoint 3: x %f y %f z %f".formatted(bobberLaunchVelocity.x, bobberLaunchVelocity.y, bobberLaunchVelocity.z)));
-
-            //TODO: custom physics component
-            //TODO: bobber component (que na verdade é a dificuldade do minigame - status do peixe)
 
             ModelAsset modelAsset = ModelAsset.getAssetMap().getAsset("Bobber");
             if (modelAsset == null) {
                 modelAsset = ModelAsset.DEBUG;
-                ref.sendMessage(Message.raw("Checkpoint 4"));
+
             }
             Model model = Model.createScaledModel(modelAsset, 2f);
             bobberHolder.addComponent(PersistentModel.getComponentType(), new PersistentModel(model.toReference()));
@@ -119,8 +111,6 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
 
             rpgComponent.setBobberId(bobberId);
 
-            ref.sendMessage(Message.raw("Checkpoint 5, Id: %s".formatted(bobberId.toString())));
-
             commandBuffer.getExternalData().getWorld().execute(() -> {
                 commandBuffer.addEntity(bobberHolder, AddReason.SPAWN);
             });
@@ -129,13 +119,12 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
         }else{
 
             if(rpgComponent.isFishBiting()){
-                ref.sendMessage(Message.raw("CATCH!"));
-                CatchFishEvent.dispatch(playerRef);
+                ref.sendMessage(Message.raw("FISGADA!"));
+                StartMinigameEvent.dispatch(playerRef, commandBuffer);
+            }else {
+                ref.sendMessage(Message.raw("Removing bobber"));
+                StopFishingEvent.dispatch(playerRef);
             }
-
-            ref.sendMessage(Message.raw("Removing bobber"));
-
-            StopFishingEvent.dispatch(playerRef);
         }
 
     }

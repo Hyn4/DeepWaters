@@ -1,5 +1,6 @@
 package org.example.handlers;
 
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.protocol.ClientCameraView;
 import com.hypixel.hytale.protocol.MovementSettings;
@@ -9,6 +10,8 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.player.CameraManager;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.StartFishingEvent;
 import org.example.events.StopFishingEvent;
@@ -36,21 +39,23 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
             return;
         }
 
-        var bobberRef = world.getEntityRef(rpg.getBobberId());
+        if (rpg.getBobberId() != null) {
+            var bobberRef = world.getEntityRef(rpg.getBobberId());
 
-        try {
-            world.execute(() -> {
-                if (!bobberRef.isValid()) {
-                    return;
-                }
-                try {
-                    store.removeEntity(bobberRef, RemoveReason.REMOVE);
-                } catch (Exception e) {
-                    player.sendMessage(Message.raw(e.toString()));
-                }
-            });
-        } catch (Exception e) {
-            player.sendMessage(Message.raw("Failed to enqueue bobber remove"));
+            try {
+                world.execute(() -> {
+                    if (!bobberRef.isValid()) {
+                        return;
+                    }
+                    try {
+                        store.removeEntity(bobberRef, RemoveReason.REMOVE);
+                    } catch (Exception e) {
+                        player.sendMessage(Message.raw(e.toString()));
+                    }
+                });
+            } catch (Exception e) {
+                player.sendMessage(Message.raw("Failed to enqueue bobber remove"));
+            }
         }
 
         rpg.setBobberId(null);

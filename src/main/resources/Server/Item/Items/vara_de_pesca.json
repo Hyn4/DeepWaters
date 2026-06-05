@@ -48,6 +48,16 @@
           }
         }
       ]
+    },
+    "Primary": {
+      "Interactions": [
+        {
+          "Type" : "fishing_interaction_id"
+        }
+      ],
+      "Cooldown": {
+        "Cooldown": 0
+      }
     }
   }
 }
