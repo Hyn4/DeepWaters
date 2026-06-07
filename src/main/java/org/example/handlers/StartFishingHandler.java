@@ -50,20 +50,11 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         movementSettings.minFallSpeedToEngageRoll = Float.MAX_VALUE;
 
 
-        SetServerCamera packet = new SetServerCamera(ClientCameraView.ThirdPerson, true, new ServerCameraSettings());
+        //SetServerCamera packet = new SetServerCamera(ClientCameraView.ThirdPerson, true, new ServerCameraSettings());
 
-        player.getPacketHandler().writeNoCache(packet);
+        //player.getPacketHandler().writeNoCache(packet);
 
         movementManager.update(player.getPacketHandler());
-
-        /*PageManager pageManager = player.getComponent(Player.getComponentType()).getPageManager();
-
-        FishingPage fishingPage = new FishingPage(player, pRef -> {
-            // Trigger your event!
-            StopFishingEvent.dispatch(pRef.getReference());
-        });
-
-        pageManager.openCustomPage(event.playerRef(), store, fishingPage);*/
 
         player.sendMessage(Message.raw("Fishing!"));
         rpg.setFishing(true);

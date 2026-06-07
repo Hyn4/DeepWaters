@@ -73,18 +73,13 @@ public class FishingInteraction extends SimpleInstantInteraction {
         var playerHeadDirection = playerHeadRotation.getDirection().normalize();
 
         double side = (playerHeadDirection.x * playerToBobber.z) - (playerHeadDirection.z * playerToBobber.x);
+        double height = playerHeadRotation.getRotation().pitch() / 1.56f;
+
+        fishermanComponent.setHeight(height);
+        fishermanComponent.setSide(side);
 
 
-        if (side > 0) {
-            fishermanComponent.setSide(side);
-            //playerRef.sendMessage(Message.raw("LEFT %f".formatted(side)));
-        } else if (side < 0) {
-            fishermanComponent.setSide(side);
-            //playerRef.sendMessage(Message.raw("RIGHT %f".formatted(side)));
-        } else {
-            fishermanComponent.setSide(side);
-            //playerRef.sendMessage(Message.raw("MIDDLE %f".formatted(side)));
-        }
+        //playerRef.sendMessage(Message.raw("%f".formatted(height)));
 
 
 

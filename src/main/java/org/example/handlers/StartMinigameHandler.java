@@ -27,6 +27,7 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var store = event.player().getStore();
         var playerRef = store.getComponent(event.player(), PlayerRef.getComponentType());
         var commandBuffer = event.commandBuffer();
+        var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
 
         playerRef.sendMessage(Message.raw("Checkpoint 1"));
 
@@ -54,10 +55,21 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         var playerId = bobberPyhsicsComponent.getPlayerId();
 
+        var bobberPos = store.getComponent(bobberRef,TransformComponent.getComponentType()).getPosition();
+
+        double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
+                .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
+
+        double dx = bobberPos.x - playerPos.x;
+        double dz = bobberPos.z - playerPos.z;
+
+
+
+
         playerRef.sendMessage(Message.raw("Checkpoint 4"));
 
         //coloca o fish component e passa o playerID
-        commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(), new FishComponent(playerId));
+        commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(), new FishComponent(playerId, (float)distanceXZ, Math.atan2(dz, dx)));
 
 
         playerRef.sendMessage(Message.raw("Checkpoint 7"));
@@ -65,6 +77,7 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         //tira o bobber physics system
         commandBuffer.removeComponent(bobberRef, BobberPhysicsComponent.getComponentType());
+
 
         playerRef.sendMessage(Message.raw("Checkpoint 8"));
 

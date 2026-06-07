@@ -4,6 +4,7 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.component.Component;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
+import org.joml.Vector3d;
 
 import java.util.UUID;
 
@@ -23,16 +24,19 @@ public class FishComponent implements Component<EntityStore> {
 
     public FishComponent(){}
 
-    public FishComponent(UUID playerId){
+    public FishComponent(UUID playerId, float initialDistance, double initialAngle){
         this.playerId = playerId;
+        this.currentDistance = initialDistance;
+        this.initialAngle = initialAngle;
+        this.orbitAngle = initialAngle;
     }
 
-    public float getStamina() {
-        return stamina;
+    public float getCurrentStamina() {
+        return currentStamina;
     }
 
-    public void setStamina(float stamina) {
-        this.stamina = stamina;
+    public void setCurrentStamina(float currentStamina) {
+        this.currentStamina = currentStamina;
     }
 
     public float getStaminaRegen() {
@@ -51,14 +55,28 @@ public class FishComponent implements Component<EntityStore> {
         this.playerId = playerId;
     }
 
+    public boolean isSwimmingLeft() {
+        return swimmingLeft;
+    }
 
-    private UUID playerId;
-    private float stamina;
-    private float staminaRegen;
-    private float timeToRecover;
-    private float timeToCatch;
-    private float speed;
-    private boolean swimDirection;
+    public void setSwimmingLeft(boolean swimmingLeft) {
+        this.swimmingLeft = swimmingLeft;
+    }
+
+
+    public UUID playerId;
+    public float currentStamina = 5f;
+    public float maxStamina = 5f;
+    public float staminaRegen = 1f;
+    public float timeToRecover;
+    public float timeToCatch;
+    public float speed;
+    public boolean swimmingLeft = true;
+    public float currentDistance;
+    public double orbitAngle = 0f;
+    public double initialAngle = 0f;
+    public Vector3d initialPlayerPos;
+
 
 
 

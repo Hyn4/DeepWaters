@@ -64,11 +64,11 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());
         movementManager.applyDefaultSettings();
 
-        SetServerCamera packet = new SetServerCamera(ClientCameraView.FirstPerson, false, new ServerCameraSettings());
+        //SetServerCamera packet = new SetServerCamera(ClientCameraView.FirstPerson, false, new ServerCameraSettings());
 
         movementManager.update(player.getPacketHandler());
 
-        player.getPacketHandler().writeNoCache(packet);
+        //player.getPacketHandler().writeNoCache(packet);
 
         player.sendMessage(Message.raw("Stopped fishing!"));
         rpg.setFishing(false);
