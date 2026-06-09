@@ -13,8 +13,10 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
+import org.example.events.CameraControllerEvent;
 import org.example.events.StartFishingEvent;
 import org.example.events.StopFishingEvent;
+import org.example.utils.CameraState;
 import org.joml.Vector2f;
 
 import java.util.UUID;
@@ -64,11 +66,11 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());
         movementManager.applyDefaultSettings();
 
-        SetServerCamera packet = new SetServerCamera(ClientCameraView.FirstPerson, false, new ServerCameraSettings());
+
 
         movementManager.update(player.getPacketHandler());
 
-        player.getPacketHandler().writeNoCache(packet);
+        CameraControllerEvent.dispatch(event.playerRef(), CameraState.DEFAULT);
 
         player.sendMessage(Message.raw("Stopped fishing!"));
         rpg.setFishing(false);
