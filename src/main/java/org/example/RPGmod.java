@@ -58,6 +58,7 @@ public class RPGmod extends JavaPlugin {
         getEventRegistry().register(StopFishingEvent.class, new StopFishingHandler());
         getEventRegistry().register(CatchFishEvent.class, new CatchFishHandler());
         getEventRegistry().register(StartMinigameEvent.class, new StartMinigameHandler());
+        getEventRegistry().register(CameraControllerEvent.class, new CameraControllerHandler());
 
         getCommandRegistry().registerCommand(new RpgCommand());
 
