@@ -38,8 +38,7 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
                 settings.attachedToType = AttachedToType.LocalPlayer;
                 settings.distance = 4.0F;
 
-                //settings.positionOffset = new Position(4,2,0);
-
+                settings.positionOffset = new Position(1,2,0);
 
                 settings.applyLookType = ApplyLookType.LocalPlayerLookOrientation;
 

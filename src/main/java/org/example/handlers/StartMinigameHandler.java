@@ -29,11 +29,7 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var commandBuffer = event.commandBuffer();
         var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
 
-        playerRef.sendMessage(Message.raw("Checkpoint 1"));
-
         var rpgComponent = store.getComponent(event.player(), PlayerRPGComponent.getComponentType());
-
-        playerRef.sendMessage(Message.raw("Checkpoint 2"));
 
         var bobberRef = store.getExternalData().getRefFromUUID(rpgComponent.getBobberId());
 
@@ -42,8 +38,6 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
             StopFishingEvent.dispatch(event.player());
             return;
         }
-
-        playerRef.sendMessage(Message.raw("Checkpoint 3"));
 
         var bobberPyhsicsComponent = store.getComponent(bobberRef, BobberPhysicsComponent.getComponentType());
 
@@ -64,22 +58,12 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         double dz = bobberPos.z - playerPos.z;
 
 
-
-
-        playerRef.sendMessage(Message.raw("Checkpoint 4"));
-
         //coloca o fish component e passa o playerID
         commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(), new FishComponent(playerId, (float)distanceXZ, Math.atan2(dz, dx)));
 
 
-        playerRef.sendMessage(Message.raw("Checkpoint 7"));
-
-
         //tira o bobber physics system
         commandBuffer.removeComponent(bobberRef, BobberPhysicsComponent.getComponentType());
-
-
-        playerRef.sendMessage(Message.raw("Checkpoint 8"));
 
         rpgComponent.setFishBiting(false);
     }

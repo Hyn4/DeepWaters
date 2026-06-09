@@ -45,12 +45,5 @@ public class FishermanComponent implements Component<EntityStore> {
 
     private double side;
     private double height;
-    //private double tension;
-
-
-
-
-
-
 
 }

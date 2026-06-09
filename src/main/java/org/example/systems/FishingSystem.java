@@ -13,6 +13,7 @@ import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.example.components.FishComponent;
 import org.example.components.FishermanComponent;
+import org.example.components.PlayerRPGComponent;
 import org.example.events.CatchFishEvent;
 import org.example.events.StopFishingEvent;
 import org.joml.Vector3d;
@@ -42,6 +43,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     final float MIN_TIME = 2f;
     final float MAX_TIME = 5f;
     final float MAX_ANGLE = 0.7f;
+    final float TIRED_FISH_STRENGHT_MODIFIER = 0.3f;
     final float SPEED_MODIFIER = 0.4f;
     float tension = 0f;
     final float MAX_TENSION = 10f;
@@ -59,7 +61,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         var playerTransform = store.getComponent(player, TransformComponent.getComponentType());
 
         var fishermanComponent = store.getComponent(player, FishermanComponent.getComponentType());
-
+        var playerRPGComponent = store.getComponent(player, PlayerRPGComponent.getComponentType());
 
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
@@ -69,12 +71,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
 
+        playerStrenght = playerRPGComponent.getFishermanStrenght();
+        if (playerStrenght == 0) playerStrenght = PlayerRPGComponent.getDefaultStrenght();
 
 
 
-
-
-
+        if(!inWater) playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
 
         if(timeSameSide >= timeTilSideChange){
             fishStrenght *= -1;
@@ -87,7 +89,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle, fishComponent.initialAngle + targetAngle);
 
         if(!fishRested){
-            currentFishStrenght = fishStrenght * 0.5f;
+            currentFishStrenght = fishStrenght * TIRED_FISH_STRENGHT_MODIFIER;
         }else {
             if (Math.abs(fishComponent.orbitAngle) >= targetAngle * 0.9f) {
                 currentFishStrenght = fishStrenght;
@@ -95,20 +97,20 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
                 currentFishStrenght = fishStrenght * 0.8f;
             }
         }
-
         currentFishStrenght = Math.abs(currentFishStrenght);
+
         currentPlayerStrenght = (float)getForceExerted(fishermanComponent.getHeight()) * playerStrenght;
 
         tension = currentFishStrenght + currentPlayerStrenght;
 
-        if (fishermanComponent.getSide() * fishStrenght > 0 && (fishermanComponent.getSide() >= 0.50f || fishermanComponent.getSide() <= -0.50f)) { // 1.57 is approx 90 degrees
+        if (fishermanComponent.getSide() * fishStrenght > 0 && (fishermanComponent.getSide() >= 0.50f || fishermanComponent.getSide() <= -0.50f)) {
             if(fishermanComponent.getHeight() >= 0f) {
-                fishComponent.currentDistance += Math.clamp((((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), -10f, 0f); // Success!
+                fishComponent.currentDistance += Math.clamp((((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), -10f, 0f);
             }else{
-                fishComponent.currentDistance += Math.clamp((((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), 0f, currentFishStrenght); // Success!
+                fishComponent.currentDistance += Math.clamp((((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), 0f, currentFishStrenght);
             }
         } else {
-            fishComponent.currentDistance += (currentFishStrenght * dt) * SPEED_MODIFIER; // Fail!
+            fishComponent.currentDistance += (currentFishStrenght * dt) * SPEED_MODIFIER;
         }
 
         double targetX = playerPos.x + Math.cos(fishComponent.orbitAngle) * fishComponent.currentDistance;
@@ -157,7 +159,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
 
         //playerRef.sendMessage(Message.raw("TEN: %f (%fs)".formatted(tension,timeAtMaxTension)));
-        playerRef.sendMessage(Message.raw("%b".formatted(fishRested)));
+        //playerRef.sendMessage(Message.raw("%b".formatted(fishRested)));
 
 
 

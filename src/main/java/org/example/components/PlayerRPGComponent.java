@@ -49,6 +49,16 @@ public class PlayerRPGComponent implements Component<EntityStore>{
                     .build();
 
 
+    public float getFishermanStrenght() {
+        return fishermanStrenght;
+    }
+
+    public void setFishermanStrenght(float fishermanStrenght) {
+        this.fishermanStrenght = fishermanStrenght;
+    }
+
+    public float fishermanStrenght;
+
     private boolean fishBiting = false;
 
     private long totalExperience = 0;
@@ -135,6 +145,8 @@ public class PlayerRPGComponent implements Component<EntityStore>{
 
         return newLevel < oldLevel;
     }
+
+    public static float getDefaultStrenght(){return 5f;}
 
     @NullableDecl
     @Override
