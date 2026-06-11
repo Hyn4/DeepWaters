@@ -2,6 +2,7 @@ package org.example.handlers;
 
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.protocol.*;
+import com.hypixel.hytale.protocol.packets.camera.CameraShakeEffect;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
@@ -27,11 +28,11 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
 
         ServerCameraSettings settings = new ServerCameraSettings();
 
+        player.sendMessage(Message.raw("Attempting camera State: %s".formatted(event.cameraState().toString())));
+
 
         switch (event.cameraState()){
             case RIGHT -> {
-
-                player.sendMessage(Message.raw("Attempting camera State: %s".formatted(event.cameraState().toString())));
 
                 settings.isFirstPerson = false;
                 settings.eyeOffset = true;
@@ -50,26 +51,34 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
                 SetServerCamera packet = new SetServerCamera(ClientCameraView.Custom, true, settings);
                 player.getPacketHandler().writeNoCache(packet);
 
-                player.sendMessage(Message.raw("Camera State set: %s".formatted(event.cameraState().toString())));
+
             }
 
+            case THIRD_PERSON -> {
+                SetServerCamera packet = new SetServerCamera(ClientCameraView.ThirdPerson, true, new ServerCameraSettings());
+                player.getPacketHandler().writeNoCache(packet);
+            }
 
             case DEFAULT -> {
-
-                player.sendMessage(Message.raw("Attempting camera State: %s".formatted(event.cameraState().toString())));
-
-
                 SetServerCamera packet = new SetServerCamera(ClientCameraView.FirstPerson, false, new ServerCameraSettings());
                 player.getPacketHandler().writeNoCache(packet);
+            }
 
-                player.sendMessage(Message.raw("Camera State set: %s".formatted(event.cameraState().toString())));
+            case STRUGGLE -> {
+                settings.isFirstPerson = false;
+                settings.positionLerpSpeed = 0.05F; // Extremely smooth/laggy
+                settings.rotationLerpSpeed = 0.05F;
 
+                // Set high-intensity shake
+                player.getPacketHandler().writeNoCache(new CameraShakeEffect(1, 2.5F, AccumulationMode.Set));
             }
 
             case null, default -> {
                 player.sendMessage(Message.raw("Something went wrong!"));
             }
         }
+
+        player.sendMessage(Message.raw("Camera State set: %s".formatted(event.cameraState().toString())));
 
 
     }

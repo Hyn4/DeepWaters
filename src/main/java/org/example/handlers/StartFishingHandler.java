@@ -19,6 +19,7 @@ import org.example.components.PlayerRPGComponent;
 import org.example.events.CameraControllerEvent;
 import org.example.events.StartFishingEvent;
 import org.example.events.StopFishingEvent;
+import org.example.ui.FishingUI;
 import org.example.utils.CameraState;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -40,6 +41,11 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
             return;
         }
 
+        var playerObj = store.getComponent(event.playerRef(), Player.getComponentType());
+        playerObj.getHudManager().addCustomHud(player, new FishingUI(player));
+        player.sendMessage(Message.raw("HUD SHOWN!"));
+
+
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());
         MovementSettings movementSettings = movementManager.getSettings();
 
@@ -56,7 +62,7 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         movementSettings.minFallSpeedToEngageRoll = Float.MAX_VALUE;
 
 
-        CameraControllerEvent.dispatch(event.playerRef(), CameraState.RIGHT);
+        CameraControllerEvent.dispatch(event.playerRef(), CameraState.THIRD_PERSON);
 
         movementManager.update(player.getPacketHandler());
 

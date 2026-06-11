@@ -64,6 +64,8 @@ public class FishComponent implements Component<EntityStore> {
     }
 
 
+    public float orbitVelocity = 0f;
+    public float distanceVelocity = 0f;
     public UUID playerId;
     public float currentStamina = 5f;
     public float maxStamina = 5f;

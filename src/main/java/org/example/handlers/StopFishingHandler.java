@@ -7,8 +7,10 @@ import com.hypixel.hytale.protocol.MovementSettings;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.CameraManager;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
+import com.hypixel.hytale.server.core.entity.entities.player.pages.RespawnPage;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.example.components.FishermanComponent;
@@ -16,6 +18,7 @@ import org.example.components.PlayerRPGComponent;
 import org.example.events.CameraControllerEvent;
 import org.example.events.StartFishingEvent;
 import org.example.events.StopFishingEvent;
+import org.example.ui.FishingUI;
 import org.example.utils.CameraState;
 import org.joml.Vector2f;
 
@@ -59,6 +62,10 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
                 player.sendMessage(Message.raw("Failed to enqueue bobber remove"));
             }
         }
+
+        var playerObj = store.getComponent(event.playerRef(), Player.getComponentType());
+        playerObj.getHudManager().removeCustomHud(player, "FishingHudKey");
+        player.sendMessage(Message.raw("HUD HIDDEN!"));
 
         rpg.setBobberId(null);
         rpg.setFishBiting(false);

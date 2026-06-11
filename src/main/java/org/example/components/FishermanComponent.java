@@ -2,6 +2,7 @@ package org.example.components;
 
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -20,10 +21,12 @@ public class FishermanComponent implements Component<EntityStore> {
         return new FishermanComponent();
     }
 
-    public FishermanComponent(){}
+    public FishermanComponent(){
+        this.uiCommandBuilder = new UICommandBuilder();
+    }
 
     public FishermanComponent(float stamina, float staminaRegen) {
-
+        this.uiCommandBuilder = new UICommandBuilder();
     }
 
     public double getSide() {
@@ -42,7 +45,7 @@ public class FishermanComponent implements Component<EntityStore> {
         this.height = height;
     }
 
-
+    public UICommandBuilder uiCommandBuilder;
     private double side;
     private double height;
 

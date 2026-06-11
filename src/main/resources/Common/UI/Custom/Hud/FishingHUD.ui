@@ -1,0 +1,16 @@
+Group {
+    LayoutMode: Left;
+    Anchor: (Top: 20, Height: 60);
+
+    Group #TensionPanel {
+        Background: #000000(0.2);
+        Anchor: (Left: 20, Top: 20, Width: 400, Height: 400);
+        Padding: (Horizontal: 20, Vertical: 10);
+        LayoutMode: Left;
+
+        Label #TensionLabel {
+            Style: (FontSize: 32, Alignment: Center);
+            Text: "Tension";
+        }
+    }
+}
