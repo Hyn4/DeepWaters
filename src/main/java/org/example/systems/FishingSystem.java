@@ -216,4 +216,5 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         return (Math.clamp(height, -0.20f, 0.20f)) / 0.20f;
     }
 
+
 }
