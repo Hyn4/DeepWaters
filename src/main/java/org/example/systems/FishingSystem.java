@@ -5,13 +5,15 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.modules.entity.component.AudioComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -36,6 +38,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
     private final Random random = new Random();
 
+    int reelOutAudio = 0;
+    int swimSlowAudio = 0;
+    int swimFastAudio = 0;
+    int reelInAudio =0;
     boolean pulling = false;
     boolean fishRested = true;
     float currentPlayerStrenght;
@@ -46,6 +52,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     float targetAngle = 0.3f;
     float timeSameSide = 0f;
     float totalTime = 0f;
+    float timeTilReelSound = 0f;
+    float timeTilSwimSound = 0f;
     float timeAtMaxTension = 0f;
     final float MIN_TIME = 2f;
     final float MAX_TIME = 5f;
@@ -64,6 +72,11 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         var playerRef = store.getComponent(player, PlayerRef.getComponentType());
         var world = store.getExternalData().getWorld();
         var playerObj = store.getComponent(player, Player.getComponentType());
+        reelInAudio = SoundEvent.getAssetMap().getIndex("SFX_Reel_In");
+        swimFastAudio = SoundEvent.getAssetMap().getIndex("SFX_Fish_Fast");
+        swimSlowAudio = SoundEvent.getAssetMap().getIndex("SFX_Fish_Slow");
+        reelOutAudio = SoundEvent.getAssetMap().getIndex("SFX_Reel_Out");
+
 
         var bobberTransform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
         var playerTransform = store.getComponent(player, TransformComponent.getComponentType());
@@ -109,7 +122,19 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         if (!fishRested) {
             currentFishStrenght = fishStrenght * TIRED_FISH_STRENGHT_MODIFIER;
+            if(timeTilSwimSound >= 1.1f) {
+                timeTilSwimSound = 0f;
+                if (swimSlowAudio != 0)
+                    SoundUtil.playSoundEvent3dToPlayer(player, swimSlowAudio, SoundCategory.SFX, bobberPos, store);
+            }
+
         } else {
+            if(timeTilSwimSound >= 1.1f){
+                timeTilSwimSound = 0f;
+                if(swimFastAudio != 0)
+                    SoundUtil.playSoundEvent3dToPlayer(player, swimFastAudio, SoundCategory.SFX, bobberPos, store);
+            }
+
             if (Math.abs(fishComponent.orbitAngle) >= targetAngle * 0.9f) {
                 currentFishStrenght = fishStrenght;
             } else {
@@ -198,19 +223,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         uiCommandBuilder.append("Hud/FishingHUD.ui");
         uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %.1f %%".formatted((tension/MAX_TENSION) *100f)));
 
-        if(!pulling){
-            if(fishermanComponent.getHeight() > 0){
-                pulling = true;
-                /*AudioComponent audio = store.getComponent(player, AudioComponent.getComponentType());
-                int chainSoundIndex = SoundEvent.getAssetMap().getIndex("SFX_Reel_in");
-                audio.addSound(chainSoundIndex);*/
-            }
-        }
-
-        if(pulling && fishermanComponent.getHeight() == 0){
-            pulling = false;
-
-        }
 
         var customHud = playerObj.getHudManager().getCustomHud("FishingHudKey");
 
@@ -220,6 +232,18 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         fishermanComponent.setHeight(0);
         timeSameSide += dt;
         totalTime += dt;
+        timeTilSwimSound += dt;
+        timeTilReelSound += dt;
+        ParticleUtil.spawnParticleEffect("Water_Splash", bobberPos, commandBuffer);
+
+        if(timeTilReelSound >= 1f) {
+            if (fishComponent.distanceVelocity > 0) {
+                SoundUtil.playSoundEvent3dToPlayer(player, reelOutAudio, SoundCategory.SFX, playerPos, store);
+            } else if (fishComponent.distanceVelocity < 0) {
+                SoundUtil.playSoundEvent3dToPlayer(player, reelInAudio, SoundCategory.SFX, playerPos, store);
+            }
+            timeTilReelSound = 0f;
+        }
     }
 
     private float newTimeTilSideChange() {
