@@ -70,7 +70,7 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
                 settings.rotationLerpSpeed = 0.05F;
 
                 // Set high-intensity shake
-                player.getPacketHandler().writeNoCache(new CameraShakeEffect(1, 2.5F, AccumulationMode.Set));
+                player.getPacketHandler().writeNoCache(new CameraShakeEffect(1, 0.02F, AccumulationMode.Set));
             }
 
             case null, default -> {

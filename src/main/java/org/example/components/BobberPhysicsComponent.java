@@ -14,6 +14,7 @@ public class BobberPhysicsComponent implements Component<EntityStore> {
 
     private UUID playerId;
 
+    public boolean inWater = false;
 
     public static final BuilderCodec<BobberPhysicsComponent> CODEC =
             BuilderCodec
@@ -33,8 +34,6 @@ public class BobberPhysicsComponent implements Component<EntityStore> {
     public void setPlayerId(UUID playerId) {
         this.playerId = playerId;
     }
-
-
 
     private static ComponentType<EntityStore, BobberPhysicsComponent> TYPE;
 

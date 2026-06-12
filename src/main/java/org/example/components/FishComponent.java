@@ -63,7 +63,6 @@ public class FishComponent implements Component<EntityStore> {
         this.swimmingLeft = swimmingLeft;
     }
 
-
     public float orbitVelocity = 0f;
     public float distanceVelocity = 0f;
     public UUID playerId;

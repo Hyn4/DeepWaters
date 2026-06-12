@@ -6,7 +6,9 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.entity.component.AudioComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -34,6 +36,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
     private final Random random = new Random();
 
+    boolean pulling = false;
     boolean fishRested = true;
     float currentPlayerStrenght;
     float currentFishStrenght;
@@ -50,7 +53,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     final float TIRED_FISH_STRENGHT_MODIFIER = 0.3f;
     final float SPEED_MODIFIER = 0.4f;
     float tension = 0f;
-    final float MAX_TENSION = 7f;
+    final float MAX_TENSION = 6.8f;
 
     @Override
     public void tick(float dt, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
@@ -67,6 +70,9 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         var fishermanComponent = store.getComponent(player, FishermanComponent.getComponentType());
         var playerRPGComponent = store.getComponent(player, PlayerRPGComponent.getComponentType());
+
+
+
 
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
@@ -149,6 +155,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             StopFishingEvent.dispatch(player);
         }
 
+
+
         if (tension >= MAX_TENSION * 2) {
             playerRef.sendMessage(Message.raw("2X TENSION REACHED: %f".formatted(tension)));
             StopFishingEvent.dispatch(player);
@@ -188,7 +196,21 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         UICommandBuilder uiCommandBuilder = new UICommandBuilder();
         uiCommandBuilder.append("Hud/FishingHUD.ui");
-        uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %f %%".formatted((tension/MAX_TENSION) *100f)));
+        uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %.1f %%".formatted((tension/MAX_TENSION) *100f)));
+
+        if(!pulling){
+            if(fishermanComponent.getHeight() > 0){
+                pulling = true;
+                /*AudioComponent audio = store.getComponent(player, AudioComponent.getComponentType());
+                int chainSoundIndex = SoundEvent.getAssetMap().getIndex("SFX_Reel_in");
+                audio.addSound(chainSoundIndex);*/
+            }
+        }
+
+        if(pulling && fishermanComponent.getHeight() == 0){
+            pulling = false;
+
+        }
 
         var customHud = playerObj.getHudManager().getCustomHud("FishingHudKey");
 
