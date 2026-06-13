@@ -5,13 +5,17 @@ import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.protocol.ClientCameraView;
 import com.hypixel.hytale.protocol.MovementSettings;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.CameraManager;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.RespawnPage;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
@@ -72,8 +76,6 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
 
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());
         movementManager.applyDefaultSettings();
-
-
 
         movementManager.update(player.getPacketHandler());
 

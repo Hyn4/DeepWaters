@@ -98,6 +98,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
                 velocity.z = 0;
                 bobberPhysicsComponent.inWater = true;
                 SoundUtil.playSoundEvent3dToPlayer(playerRef, audio, SoundCategory.SFX, position, store);
+                ParticleUtil.spawnParticleEffect("Water_Splash", position, commandBuffer);
 
             }
         }

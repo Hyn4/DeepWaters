@@ -1,11 +1,14 @@
 package org.example.handlers;
 
 
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.ItemUtils;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.npc.util.InventoryHelper;
 import org.example.events.CatchFishEvent;
 import org.example.events.GiveXPEvent;
@@ -23,6 +26,10 @@ public class CatchFishHandler implements Consumer<CatchFishEvent> {
 
         String fishId = "Template_Fish_Item";
 
+        var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
+
+        int audio = SoundEvent.getAssetMap().getIndex("SFX_Potion_Drink_Success");
+
         ItemStack fishStack = InventoryHelper.createItem(fishId);
 
         if(fishStack == null){
@@ -31,6 +38,8 @@ public class CatchFishHandler implements Consumer<CatchFishEvent> {
 
         TransformComponent transform = store.getComponent(event.player(), TransformComponent.getComponentType());
         Vector3d spawnPos = transform.getPosition();
+
+        SoundUtil.playSoundEvent3dToPlayer(event.player(), audio, SoundCategory.SFX, playerPos, store);
 
         playerRef.sendMessage(Message.raw("FISH!"));
         GiveXPEvent.dispatch(event.player(),50L);

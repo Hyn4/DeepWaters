@@ -5,6 +5,7 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.protocol.Particle;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
@@ -234,7 +235,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         totalTime += dt;
         timeTilSwimSound += dt;
         timeTilReelSound += dt;
-        ParticleUtil.spawnParticleEffect("Water_Splash", bobberPos, commandBuffer);
+
+        ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos,0f,0f,0f,0.5f, 0.2f, commandBuffer);
 
         if(timeTilReelSound >= 1f) {
             if (fishComponent.distanceVelocity > 0) {
