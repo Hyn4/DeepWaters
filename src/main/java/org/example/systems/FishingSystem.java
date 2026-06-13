@@ -39,10 +39,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
     private final Random random = new Random();
 
+    int lineBreakAudio = 0;
     int reelOutAudio = 0;
     int swimSlowAudio = 0;
     int swimFastAudio = 0;
-    int reelInAudio =0;
+    int reelInAudio = 0;
+    int maxTensionAudio = 0;
     boolean pulling = false;
     boolean fishRested = true;
     float currentPlayerStrenght;
@@ -77,6 +79,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         swimFastAudio = SoundEvent.getAssetMap().getIndex("SFX_Fish_Fast");
         swimSlowAudio = SoundEvent.getAssetMap().getIndex("SFX_Fish_Slow");
         reelOutAudio = SoundEvent.getAssetMap().getIndex("SFX_Reel_Out");
+        maxTensionAudio = SoundEvent.getAssetMap().getIndex("SFX_Max_Tension");
+        lineBreakAudio = SoundEvent.getAssetMap().getIndex("SFX_Line_Break");
 
 
         var bobberTransform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
@@ -196,6 +200,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
 
         if (timeAtMaxTension >= 2) {
+            SoundUtil.playSoundEvent3dToPlayer(player, lineBreakAudio, SoundCategory.SFX, playerPos, store);
             playerRef.sendMessage(Message.raw("LINHA QUEBROU! "));
             StopFishingEvent.dispatch(player);
         }
@@ -238,11 +243,15 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos,0f,0f,0f,0.5f, 0.2f, commandBuffer);
 
-        if(timeTilReelSound >= 1f) {
-            if (fishComponent.distanceVelocity > 0) {
-                SoundUtil.playSoundEvent3dToPlayer(player, reelOutAudio, SoundCategory.SFX, playerPos, store);
-            } else if (fishComponent.distanceVelocity < 0) {
-                SoundUtil.playSoundEvent3dToPlayer(player, reelInAudio, SoundCategory.SFX, playerPos, store);
+        if(timeTilReelSound >= 0.3f) {
+            if(tension < MAX_TENSION) {
+                if (fishComponent.distanceVelocity > 0) {
+                    SoundUtil.playSoundEvent3dToPlayer(player, reelOutAudio, SoundCategory.SFX, playerPos, store);
+                } else if (fishComponent.distanceVelocity < 0) {
+                    SoundUtil.playSoundEvent3dToPlayer(player, reelInAudio, SoundCategory.SFX, playerPos, store);
+                }
+            }else{
+                SoundUtil.playSoundEvent3dToPlayer(player, maxTensionAudio, SoundCategory.SFX, playerPos, store);
             }
             timeTilReelSound = 0f;
         }

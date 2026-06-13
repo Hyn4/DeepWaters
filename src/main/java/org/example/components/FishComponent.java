@@ -63,20 +63,35 @@ public class FishComponent implements Component<EntityStore> {
         this.swimmingLeft = swimmingLeft;
     }
 
+
+    //initial variables
+    public double initialAngle = 0f;
+    public Vector3d initialPlayerPos;
+    public UUID playerId;
+
+    //spatial variables:
     public float orbitVelocity = 0f;
     public float distanceVelocity = 0f;
-    public UUID playerId;
+    public boolean swimmingLeft = true;
+    public float currentDistance;
+    public double orbitAngle = 0f;
+
+    //stamina variables
     public float currentStamina = 5f;
     public float maxStamina = 5f;
     public float staminaRegen = 1f;
     public float timeToRecover;
-    public float timeToCatch;
+
+    //physical stats
+    public float strength;
     public float speed;
-    public boolean swimmingLeft = true;
-    public float currentDistance;
-    public double orbitAngle = 0f;
-    public double initialAngle = 0f;
-    public Vector3d initialPlayerPos;
+    public float size; //meters
+
+
+
+
+
+
 
 
 
