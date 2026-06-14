@@ -62,7 +62,6 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         Ref<EntityStore> playerRef = store.getExternalData().getRefFromUUID(bobberPhysicsComponent.getPlayerId());
         Vector3d playerPos= store.getComponent(playerRef, TransformComponent.getComponentType()).getPosition();
         boolean playerIsFishing = store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishing();
-        int audio = SoundEvent.getAssetMap().getIndex("SFX_Water_Movein");
 
         if (transform == null || velocityComp == null || boundingBoxComponent == null) return;
 
@@ -97,7 +96,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
                 velocity.x = 0;
                 velocity.z = 0;
                 bobberPhysicsComponent.inWater = true;
-                SoundUtil.playSoundEvent3dToPlayer(playerRef, audio, SoundCategory.SFX, position, store);
+                SoundUtil.playSoundEvent3dToPlayer(playerRef, bobberPhysicsComponent.getWaterMoveInAudio(), SoundCategory.SFX, position, store);
                 ParticleUtil.spawnParticleEffect("Water_Splash", position, commandBuffer);
 
             }
@@ -124,7 +123,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         //peixe mordeu
         if(timeFishing >= timeTilCatch && playerIsFishing){
             ParticleUtil.spawnParticleEffect("Alerted", position, commandBuffer);
-            SoundUtil.playSoundEvent3dToPlayer(playerRef, audio, SoundCategory.SFX, position, store);
+            SoundUtil.playSoundEvent3dToPlayer(playerRef, bobberPhysicsComponent.getWaterMoveInAudio(), SoundCategory.SFX, position, store);
             store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("MORDEU!!!!! %f sec".formatted(timeTilCatch)));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(true);
             timeTilCatch = setTimeTilCatch();

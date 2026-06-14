@@ -34,11 +34,13 @@ public class RPGStatCommand extends AbstractPlayerCommand {
         var totalXP = rpg.getTotalExeperience();
         var currentXP = rpg.getCurrentLevelXP();
         var progress = rpg.getProgress()*100;
+        var fishermanStrength = rpg.getFishermanStrenght();
         var toNext = (int) (rpg.getXPtoNextLevel());
 
         playerRef.sendMessage(Message.raw("======== RPG STATS ========="));
         playerRef.sendMessage(Message.raw("Level: %d%s".formatted(level,rpg.isMaxLevel() ? " (MAX) " : "")));
         playerRef.sendMessage(Message.raw("Total XP: %d".formatted(totalXP)));
+        playerRef.sendMessage(Message.raw("Fisherman Strength : %.1f".formatted(fishermanStrength)));
 
         if (!rpg.isMaxLevel()){
             playerRef.sendMessage(Message.raw("Progress: %d/%d (%f%%)".formatted(currentXP,(currentXP + toNext), progress)));

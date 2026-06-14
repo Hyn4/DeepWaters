@@ -24,7 +24,7 @@ public class CatchFishHandler implements Consumer<CatchFishEvent> {
         var store = event.player().getStore();
         var playerRef = store.getComponent(event.player(), PlayerRef.getComponentType());
 
-        String fishId = "Template_Fish_Item";
+        String fishId = event.fishType();
 
         var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
 

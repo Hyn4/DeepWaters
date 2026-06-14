@@ -15,8 +15,10 @@ import org.example.events.CatchFishEvent;
 import org.example.events.GiveXPEvent;
 import org.example.events.StartMinigameEvent;
 import org.example.events.StopFishingEvent;
+import org.example.utils.FishType;
 import org.joml.Vector3d;
 
+import java.util.Random;
 import java.util.function.Consumer;
 
 public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
@@ -57,9 +59,14 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         double dx = bobberPos.x - playerPos.x;
         double dz = bobberPos.z - playerPos.z;
 
+        FishType fishType = FishType.getWeightedRandom(new Random());
+
+        playerRef.sendMessage(Message.raw(fishType.toString()));
+
+        var fishComponent = new FishComponent(playerId, (float)distanceXZ, Math.atan2(dz, dx), fishType);
 
         //coloca o fish component e passa o playerID
-        commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(), new FishComponent(playerId, (float)distanceXZ, Math.atan2(dz, dx)));
+        commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(),fishComponent);
 
 
         //tira o bobber physics system
@@ -67,5 +74,6 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         rpgComponent.setFishBiting(false);
     }
+
 
 }

@@ -5,6 +5,7 @@ import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
@@ -51,10 +52,24 @@ public class BobberPhysicsComponent implements Component<EntityStore> {
         return new BobberPhysicsComponent();
     }
 
-    public BobberPhysicsComponent(){}
+    public BobberPhysicsComponent(){
+        waterMoveInAudio = SoundEvent.getAssetMap().getIndex(WATER_MOVE_IN_SFX);
+    }
 
     public BobberPhysicsComponent(UUID playerId){
+
         this.setPlayerId(playerId);
+
+        waterMoveInAudio = SoundEvent.getAssetMap().getIndex(WATER_MOVE_IN_SFX);
     }
+
+
+    public final String WATER_MOVE_IN_SFX = "SFX_Water_Movein";
+
+    public int getWaterMoveInAudio() {
+        return waterMoveInAudio;
+    }
+
+    private int waterMoveInAudio;
 
 }

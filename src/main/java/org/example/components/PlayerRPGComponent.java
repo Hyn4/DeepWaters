@@ -50,14 +50,13 @@ public class PlayerRPGComponent implements Component<EntityStore>{
 
 
     public float getFishermanStrenght() {
-        return fishermanStrenght;
+        return calculateFishermanStrenghtFromLevel();
     }
 
-    public void setFishermanStrenght(float fishermanStrenght) {
-        this.fishermanStrenght = fishermanStrenght;
+    private float calculateFishermanStrenghtFromLevel(){
+        return 5 + getLevel() * 3;
     }
 
-    public float fishermanStrenght;
 
     private boolean fishBiting = false;
 
