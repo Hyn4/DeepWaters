@@ -86,12 +86,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         if (!inWater)
             playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
 
-        fishStrenght = fishComponent.strength;
+        fishStrenght = fishComponent.type.strength;
 
         if (timeSameSide >= timeTilSideChange) {
             fishStrenght *= -1;
-            targetAngle = newAngle(fishComponent.maxAngle);
-            timeTilSideChange = newTimeTilSideChange(fishComponent.minTimeToChangeSides, fishComponent.maxTimeToChangeSides);
+            targetAngle = newAngle(fishComponent.type.maxAngle);
+            timeTilSideChange = newTimeTilSideChange(fishComponent.type.minTimeToChangeSides, fishComponent.type.maxTimeToChangeSides);
             timeSameSide = 0f;
         }
 
@@ -106,7 +106,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
                 fishComponent.initialAngle + targetAngle);
 
         if (!fishRested) {
-            currentFishStrenght = fishStrenght * fishComponent.tiredFishStrenghtModifier;
+            currentFishStrenght = fishStrenght * fishComponent.type.tiredFishStrenghtModifier;
             if(timeTilSwimSound >= 1.1f) {
                 timeTilSwimSound = 0f;
                 if (fishComponent.getSwimSlowAudio() != 0)
@@ -166,7 +166,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
         else if (distanceXZ <= 2) {
             SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
-            CatchFishEvent.dispatch(player, fishComponent.itemId);
+            CatchFishEvent.dispatch(player, fishComponent.type.getItemId());
             StopFishingEvent.dispatch(player);
         }
 
@@ -192,15 +192,15 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         if (fishComponent.currentStamina <= 0f) {
             fishRested = false;
         }
-        if (fishComponent.currentStamina >= fishComponent.maxStamina && !fishRested) {
-            fishComponent.currentStamina = fishComponent.maxStamina;
+        if (fishComponent.currentStamina >= fishComponent.type.maxStamina && !fishRested) {
+            fishComponent.currentStamina = fishComponent.type.maxStamina;
             fishRested = true;
         }
         if (fishRested) {
             fishComponent.currentStamina -= dt;
         }
         else {
-            fishComponent.currentStamina += (dt * fishComponent.staminaRegen);
+            fishComponent.currentStamina += (dt * fishComponent.type.staminaRegen);
         }
 
         //TENSION% HUD (!!!!!have to activate and deactive in StarFishingHandler and StopFishingHandler to work !!!!!!)

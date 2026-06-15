@@ -20,16 +20,22 @@ public enum FishType {
 
     CLOWNFISH("Fish_Clownfish_Item", 2f, 2.0f, 1.0f, 3.0f, 0.90f, 0.60f, 3f, 1f, 0.10f, 160),
 
-    // All five Tang species — moderate difficulty, quick turns.
     TANG_BLUE("Fish_Tang_Blue_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 1f, 0.25f, 120),
+
     TANG_CHEVRON("Fish_Tang_Chevron_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 1f, 0.25f, 120),
+
     TANG_LEMON_PEEL("Fish_Tang_Lemon_Peel_Item", 5.5f, 0.95f, 1.2f, 3.5f, 0.70f, 0.40f, 10f, 1f, 0.22f, 120),
+
     TANG_SAILFIN("Fish_Tang_Sailfin_Item", 7f, 0.8f, 1.0f, 3.5f, 0.65f, 0.35f, 14f, 1f, 0.30f, 110),
 
     JELLYFISH_BLUE("Fish_Jellyfish_Blue_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
+
     JELLYFISH_CYAN("Fish_Jellyfish_Cyan_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
+
     JELLYFISH_GREEN("Fish_Jellyfish_Green_Item", 4.5f, 1.1f, 2.5f, 7.0f, 0.60f, 0.50f, 8f, 1f, 0.35f, 120),
+
     JELLYFISH_RED("Fish_Jellyfish_Red_Item", 5f, 1.0f, 2.5f, 7.0f, 0.65f, 0.45f, 10f, 1f, 0.35f, 110),
+
     JELLYFISH_YELLOW("Fish_Jellyfish_Yellow_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
 
     PUFFERFISH("Fish_Pufferfish_Item", 5f, 1.0f, 0.8f, 3.0f, 0.85f, 0.40f, 9f, 1f, 0.20f, 100),
@@ -57,6 +63,8 @@ public enum FishType {
     TRILOBITE_BLACK("Fish_Trilobite_Black_Item", 20f, 0.2f, 7.0f, 15.0f, 0.50f, 0.10f, 85f, 1f, 0.55f, 5),
 
     WHALE_HUMPBACK("Fish_Whale_Humpback_Item", 30f, 0.15f, 8.0f, 20.0f, 0.40f, 0.05f, 100f, 1f, 15.00f, 2);
+
+
 
     private final String itemId;
     public final float maxStamina; // how long the fish actively fights (seconds)
@@ -91,16 +99,6 @@ public enum FishType {
         return itemId;
     }
 
-    /**
-     * Returns a random FishType using weighted rarity.
-     * High-weight entries are more likely to be chosen.
-     *
-     * How it works:
-     * 1. Sum all weights.
-     * 2. Pick a random number in [0, totalWeight).
-     * 3. Walk through the list subtracting each weight until we hit zero.
-     * The entry that brings the sum to zero (or below) is the winner.
-     */
     public static FishType getWeightedRandom(Random random) {
         int totalWeight = 0;
         for (FishType f : values())
