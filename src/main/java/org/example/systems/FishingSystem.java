@@ -9,6 +9,7 @@ import com.hypixel.hytale.protocol.Particle;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
+import com.hypixel.hytale.server.core.entity.AnimationUtils;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
@@ -79,9 +80,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
 
         int fluidId = world.getFluidId((int) bobberPos.x, (int) Math.floor(bobberPos.y), (int) bobberPos.z);
-        boolean inWater = (fluidId == 7 || fluidId == 8 || fluidId == 12);
+        boolean inWater = (fluidId == 7 || fluidId == 8 || fluidId == 12 || fluidId == 2);
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
+
 
         if (!inWater)
             playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
@@ -129,6 +131,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         currentFishStrenght = Math.abs(currentFishStrenght);
 
         currentPlayerStrenght = (float) getForceExerted(fishermanComponent.getHeight()) * playerRPGComponent.getFishermanStrenght();
+
+
 
         // --- B. SMOOTHED TENSION ---
         float targetTension = currentFishStrenght + currentPlayerStrenght;

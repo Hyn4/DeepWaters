@@ -59,6 +59,16 @@ public class FishermanComponent implements Component<EntityStore> {
     public UICommandBuilder uiCommandBuilder;
     private double side;
     private double height;
+
+    public boolean isReeling() {
+        return isReeling;
+    }
+
+    public void setReeling(boolean reeling) {
+        isReeling = reeling;
+    }
+
+    private boolean isReeling;
     private float maxTension = 100f;
 
     public final String REEL_IN_SFX = "SFX_Reel_In";

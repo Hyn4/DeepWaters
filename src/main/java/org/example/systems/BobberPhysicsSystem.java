@@ -65,8 +65,6 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
 
         if (transform == null || velocityComp == null || boundingBoxComponent == null) return;
 
-
-
         World world = store.getExternalData().getWorld();
         Vector3d position = new Vector3d(transform.getPosition());
         Vector3d velocity = new Vector3d();
@@ -82,8 +80,8 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         }
 
         int fluidId = world.getFluidId((int)position.x, (int)Math.floor(position.y), (int)position.z);
-        boolean inWater = (fluidId == 7||fluidId == 8||fluidId == 12);
 
+        boolean inWater = (fluidId == 7||fluidId == 9||fluidId == 12 || fluidId == 2);
 
         //seta vel e timers
         if(!bobberPhysicsComponent.inWater){
@@ -135,7 +133,6 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
             store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FUGIU!!!!!"));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(false);
         }
-
 
         //atualiza posição
         Vector3d scaledVel = new Vector3d();

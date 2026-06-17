@@ -39,6 +39,11 @@
       "Interactions": [
         {
           "Type": "Charging",
+          "Effects": {
+            "ItemPlayerAnimationsId": "FishingRod",
+            "ItemAnimationId": "Cast",
+            "WaitForAnimationToFinish": true
+          },
           "FailsOnDamage": true,
           "HorizontalSpeedMultiplier": 0.2,
           "Next": {
@@ -47,16 +52,22 @@
             }
           }
         }
-      ]
-    },
-    "Primary": {
-      "Interactions": [
-        {
-          "Type" : "fishing_interaction_id"
-        }
       ],
       "Cooldown": {
-        "Cooldown": 0
+        "Cooldown": 1
+      }
+    },
+    "Primary": {
+      "Type": "Simple",
+      "Effects": {
+        "ItemPlayerAnimationsId": "FishingRod",
+        "ItemAnimationId": "Reel",
+        "WaitForAnimationToFinish": false
+      },
+      "AllowIndefiniteHold": true,
+      "DisplayProgress": false,
+      "Next": {
+        "Type": "fishing_interaction_id"
       }
     }
   }
