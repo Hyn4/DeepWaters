@@ -46,6 +46,7 @@
           },
           "FailsOnDamage": true,
           "HorizontalSpeedMultiplier": 0.2,
+          "AllowIndefiniteHold": true,
           "Next": {
             "0.5": {
               "Type": "my_custom_interaction_id"
@@ -58,17 +59,26 @@
       }
     },
     "Primary": {
-      "Type": "Simple",
-      "Effects": {
-        "ItemPlayerAnimationsId": "FishingRod",
-        "ItemAnimationId": "Reel",
-        "WaitForAnimationToFinish": false
-      },
-      "AllowIndefiniteHold": true,
-      "DisplayProgress": false,
-      "Next": {
-        "Type": "fishing_interaction_id"
-      }
+      "Interactions": [
+        {
+          "Type": "fishing_interaction_id",
+          "Next": {
+            "Type": "Charging",
+            "Effects": {
+              "ItemPlayerAnimationsId": "FishingRod",
+              "ItemAnimationId": "Reel",
+              "WaitForAnimationToFinish": false
+            },
+            "AllowIndefiniteHold": true,
+            "DisplayProgress": true,
+            "Next": {
+              "0.1": {
+                "Type": "fishing_interaction_id"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

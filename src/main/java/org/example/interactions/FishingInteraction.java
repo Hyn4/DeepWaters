@@ -49,41 +49,11 @@ public class FishingInteraction extends SimpleInstantInteraction {
 
         var player = interactionContext.getOwningEntity();
         var commandBuffer = interactionContext.getCommandBuffer();
-        var rpgComponent = commandBuffer.getComponent(player, PlayerRPGComponent.getComponentType());
         var fishermanComponent = commandBuffer.getComponent(player, FishermanComponent.getComponentType());
 
+        fishermanComponent.switchReelingState();
 
-        if (rpgComponent.getBobberId() == null) return;
-
-        var world = commandBuffer.getExternalData().getWorld();
-        var playerRef = commandBuffer.getComponent(player, PlayerRef.getComponentType());
-        var bobberRef = world.getEntityRef(rpgComponent.getBobberId());
-
-        if(!bobberRef.isValid()) return;
-
-        var bobberTransform = commandBuffer.getComponent(bobberRef, TransformComponent.getComponentType());
-        var playerTransform = commandBuffer.getComponent(player, TransformComponent.getComponentType());
-
-        var playerPos = playerTransform.getPosition();
-        var bobberPos = bobberTransform.getPosition();
-
-        var playerToBobber = new Vector3d(bobberPos).sub(playerPos).normalize();
-
-        var playerHeadRotation = commandBuffer.getComponent(player, HeadRotation.getComponentType());
-        var playerHeadDirection = playerHeadRotation.getDirection().normalize();
-
-        double side = (playerHeadDirection.x * playerToBobber.z) - (playerHeadDirection.z * playerToBobber.x);
-        double height = playerHeadRotation.getRotation().pitch() / 1.56f;
-
-        fishermanComponent.setHeight(height);
-        fishermanComponent.setSide(side);
-
-
-        //playerRef.sendMessage(Message.raw("%f".formatted(height)));
-
-
-
-
+        commandBuffer.getComponent(player,PlayerRef.getComponentType()).sendMessage(Message.raw("IsReeling: %b".formatted(fishermanComponent.isReeling())));
     }
 
 

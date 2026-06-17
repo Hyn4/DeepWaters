@@ -68,6 +68,10 @@ public class FishermanComponent implements Component<EntityStore> {
         isReeling = reeling;
     }
 
+    public void switchReelingState(){
+        this.setReeling(!this.isReeling());
+    }
+
     private boolean isReeling;
     private float maxTension = 100f;
 

@@ -65,6 +65,8 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         var fishComponent = new FishComponent(playerId, (float)distanceXZ, Math.atan2(dz, dx), fishType);
 
+        store.getComponent(event.player(),FishermanComponent.getComponentType()).setReeling(false);
+
         //coloca o fish component e passa o playerID
         commandBuffer.addComponent(bobberRef, FishComponent.getComponentType(),fishComponent);
 

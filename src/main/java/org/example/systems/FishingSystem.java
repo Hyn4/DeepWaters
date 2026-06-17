@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.AnimationUtils;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -87,6 +88,19 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         if (!inWater)
             playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
+
+
+        if(playerRPGComponent.isFishing()){
+            var playerToBobber = new Vector3d(bobberPos).sub(playerPos).normalize();
+            var playerHeadRotation = commandBuffer.getComponent(player, HeadRotation.getComponentType());
+            var playerHeadDirection = playerHeadRotation.getDirection().normalize();
+
+            double side = (playerHeadDirection.x * playerToBobber.z) - (playerHeadDirection.z * playerToBobber.x);
+            double height = playerHeadRotation.getRotation().pitch() / 1.56f;
+
+            fishermanComponent.setHeight(height);
+            fishermanComponent.setSide(side);
+        }
 
         fishStrenght = fishComponent.type.strength;
 
