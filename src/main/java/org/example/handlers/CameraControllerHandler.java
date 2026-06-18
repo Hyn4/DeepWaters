@@ -28,7 +28,7 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
 
         ServerCameraSettings settings = new ServerCameraSettings();
 
-        player.sendMessage(Message.raw("Attempting camera State: %s".formatted(event.cameraState().toString())));
+        //player.sendMessage(Message.raw("Attempting camera State: %s".formatted(event.cameraState().toString())));
 
 
         switch (event.cameraState()){
@@ -78,7 +78,7 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
             }
         }
 
-        player.sendMessage(Message.raw("Camera State set: %s".formatted(event.cameraState().toString())));
+        //player.sendMessage(Message.raw("Camera State set: %s".formatted(event.cameraState().toString())));
 
 
     }

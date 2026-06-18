@@ -44,7 +44,7 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
         if(rpg == null) return;
 
         if(!rpg.isFishing()) {
-            player.sendMessage(Message.raw("Is not fishing!"));
+            //player.sendMessage(Message.raw("Is not fishing!"));
             return;
         }
 
@@ -81,7 +81,7 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
 
         CameraControllerEvent.dispatch(event.playerRef(), CameraState.DEFAULT);
 
-        player.sendMessage(Message.raw("Stopped fishing!"));
+        //player.sendMessage(Message.raw("Stopped fishing!"));
         rpg.setFishing(false);
     }
 }

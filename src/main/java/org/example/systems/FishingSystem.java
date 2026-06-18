@@ -2,18 +2,14 @@ package org.example.systems;
 
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
-import com.hypixel.hytale.protocol.Particle;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
-import com.hypixel.hytale.server.core.entity.AnimationUtils;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
-import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
@@ -85,42 +81,155 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
 
+        MANAGE_DISTANCE(store, distanceXZ, player, fishComponent, playerPos);
 
-        if (!inWater)
-            playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
+        //if (!inWater) playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
 
-
-        if(playerRPGComponent.isFishing()){
-            var playerToBobber = new Vector3d(bobberPos).sub(playerPos).normalize();
-            var playerHeadRotation = commandBuffer.getComponent(player, HeadRotation.getComponentType());
-            var playerHeadDirection = playerHeadRotation.getDirection().normalize();
-
-            double side = (playerHeadDirection.x * playerToBobber.z) - (playerHeadDirection.z * playerToBobber.x);
-            double height = playerHeadRotation.getRotation().pitch() / 1.56f;
-
-            fishermanComponent.setHeight(height);
-            fishermanComponent.setSide(side);
+        if(fishermanComponent.isReeling()){
+            GET_REEL_PLAYER_INPUT(commandBuffer, bobberPos, playerPos, player, fishermanComponent);
         }
 
         fishStrenght = fishComponent.type.strength;
 
         if (timeSameSide >= timeTilSideChange) {
-            fishStrenght *= -1;
-            targetAngle = newAngle(fishComponent.type.maxAngle);
-            timeTilSideChange = newTimeTilSideChange(fishComponent.type.minTimeToChangeSides, fishComponent.type.maxTimeToChangeSides);
-            timeSameSide = 0f;
+            ChangeSides(fishComponent);
         }
 
-        // --- A. SMOOTHED ANGLE MOVEMENT ---
-        float targetOrbitVelocity = fishStrenght * 0.4f;
-        // Smoothing the velocity change so the fish doesn't snap instantly when
-        // changing direction
-        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * 5.0f);
+        SET_ORBIT_ANGLE(dt, fishComponent);
 
-        fishComponent.orbitAngle += fishComponent.orbitVelocity * dt;
-        fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle,
-                fishComponent.initialAngle + targetAngle);
+        SET_CURRENT_FISH_STRENGTH(store, fishComponent, player, bobberPos);
 
+        currentPlayerStrenght = (float) getForceExerted(fishermanComponent.getHeight()) * playerRPGComponent.getFishermanStrenght();
+
+        // --- B. SMOOTHED TENSION ---
+        float targetTension = currentFishStrenght + currentPlayerStrenght;
+        tension = lerp(tension, targetTension, dt * 10.0f);
+
+        //set distance based on fish strength vs player strength
+        float targetDistanceChange = GET_TARGET_DISTANCE_CHANGE(dt, fishermanComponent);
+
+        //apply smoothing to the distance velocity
+        fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * 5.0f);
+        fishComponent.currentDistance += fishComponent.distanceVelocity;
+
+        //set position based on orbit angle and distance
+        double targetX = playerPos.x + Math.cos(fishComponent.orbitAngle) * fishComponent.currentDistance;
+        double targetZ = playerPos.z + Math.sin(fishComponent.orbitAngle) * fishComponent.currentDistance;
+        bobberTransform.setPosition(new Vector3d(targetX, bobberPos.y, targetZ));
+
+
+        MANAGE_TENSION(dt, store, fishermanComponent, playerRef, player, playerPos);
+
+        MANAGE_FISH_STAMINA(dt, fishComponent);
+
+        //TENSION% HUD (!!!!!have to activate and deactive in StarFishingHandler and StopFishingHandler to work !!!!!!)
+        /*UICommandBuilder uiCommandBuilder = new UICommandBuilder();
+        uiCommandBuilder.append("Hud/FishingHUD.ui");
+        uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %.1f %%".formatted((tension/MAX_TENSION) *100f)));
+        var customHud = playerObj.getHudManager().getCustomHud("FishingHudKey");
+        if(customHud != null) customHud.update(true, uiCommandBuilder);*/
+
+        //Spawn water sprint particle on bobber
+        ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos,0f,0f,0f,0.5f, 0.2f, commandBuffer);
+
+        PLAY_ROD_SFX(store, fishermanComponent, fishComponent, player, playerPos);
+
+        INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
+    }
+
+    private void INCREASE_TIMERS_RESET_INPUT(float dt, FishermanComponent fishermanComponent) {
+        fishermanComponent.setSide(0);
+        fishermanComponent.setHeight(0);
+        timeSameSide += dt;
+        totalTime += dt;
+        timeTilSwimSound += dt;
+        timeTilReelSound += dt;
+    }
+
+    private void PLAY_ROD_SFX(@NonNullDecl Store<EntityStore> store, FishermanComponent fishermanComponent, FishComponent fishComponent, Ref<EntityStore> player, Vector3d playerPos) {
+        //play reel in / reel out / max tension SFX
+        if(timeTilReelSound >= 0.3f) {
+            if(tension < fishermanComponent.getMaxTension()) {
+                if (fishComponent.distanceVelocity > 0) {
+                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelOutAudio(), SoundCategory.SFX, playerPos, store);
+                } else if (fishComponent.distanceVelocity < 0) {
+                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelInAudio(), SoundCategory.SFX, playerPos, store);
+                }
+            }else{
+                SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getMaxTensionAudio(), SoundCategory.SFX, playerPos, store);
+            }
+            timeTilReelSound = 0f;
+        }
+    }
+
+    private void MANAGE_FISH_STAMINA(float dt, FishComponent fishComponent) {
+        //fish resting and stamina toggles and manager
+        if (fishComponent.currentStamina <= 0f) {
+            fishRested = false;
+        }
+        if (fishComponent.currentStamina >= fishComponent.type.maxStamina && !fishRested) {
+            fishComponent.currentStamina = fishComponent.type.maxStamina;
+            fishRested = true;
+        }
+        if (fishRested) {
+            fishComponent.currentStamina -= dt;
+        }
+        else {
+            fishComponent.currentStamina += (dt * fishComponent.type.staminaRegen);
+        }
+    }
+
+    private void MANAGE_TENSION(float dt, @NonNullDecl Store<EntityStore> store, FishermanComponent fishermanComponent, PlayerRef playerRef, Ref<EntityStore> player, Vector3d playerPos) {
+        //Rod tension managers
+        if (tension >= fishermanComponent.getMaxTension() * 2) {
+            playerRef.sendMessage(Message.raw("2X TENSION REACHED: %f".formatted(tension)));
+            StopFishingEvent.dispatch(player);
+        }
+        if (tension >= fishermanComponent.getMaxTension()) {
+            CameraControllerEvent.dispatch(player, CameraState.STRUGGLE);
+            timeAtMaxTension += dt;
+        } else {
+            timeAtMaxTension = 0f;
+        }
+        if (timeAtMaxTension >= 2) {
+            SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getLineBreakAduio(), SoundCategory.SFX, playerPos, store);
+            //playerRef.sendMessage(Message.raw("LINHA QUEBROU! "));
+            StopFishingEvent.dispatch(player);
+        }
+    }
+
+    private static void MANAGE_DISTANCE(@NonNullDecl Store<EntityStore> store, double distanceXZ, Ref<EntityStore> player, FishComponent fishComponent, Vector3d playerPos) {
+        //Bobber distance managers
+        if (distanceXZ >= 20) {
+            StopFishingEvent.dispatch(player);
+        }
+        else if (distanceXZ <= 2) {
+            SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
+            CatchFishEvent.dispatch(player, fishComponent.type.getItemId());
+            StopFishingEvent.dispatch(player);
+        }
+    }
+
+    private float GET_TARGET_DISTANCE_CHANGE(float dt, @NonNullDecl FishermanComponent fishermanComponent) {
+        float targetDistanceChange = 0f;
+        if (fishermanComponent.getSide() * fishStrenght > 0 && (fishermanComponent.getSide() >= 0.50f || fishermanComponent.getSide() <= -0.50f)) {
+            if (fishermanComponent.getHeight() >= 0f) {
+                targetDistanceChange = Math.clamp(
+                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), -10f, 0f);
+            }
+            else {
+                targetDistanceChange = Math.clamp(
+                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), 0f,
+                        currentFishStrenght);
+            }
+        }
+        else {
+            targetDistanceChange = (currentFishStrenght * dt) * SPEED_MODIFIER;
+        }
+        return targetDistanceChange;
+    }
+
+    private void SET_CURRENT_FISH_STRENGTH(@NonNullDecl Store<EntityStore> store, FishComponent fishComponent, Ref<EntityStore> player, Vector3d bobberPos) {
         if (!fishRested) {
             currentFishStrenght = fishStrenght * fishComponent.type.tiredFishStrenghtModifier;
             if(timeTilSwimSound >= 1.1f) {
@@ -143,116 +252,37 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             }
         }
         currentFishStrenght = Math.abs(currentFishStrenght);
+    }
 
-        currentPlayerStrenght = (float) getForceExerted(fishermanComponent.getHeight()) * playerRPGComponent.getFishermanStrenght();
+    private void SET_ORBIT_ANGLE(float dt, @NonNullDecl FishComponent fishComponent) {
+        // --- A. SMOOTHED ANGLE MOVEMENT ---
+        float targetOrbitVelocity = fishStrenght * 0.4f;
+        // Smoothing the velocity change so the fish doesn't snap instantly when
+        // changing direction
+        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * 5.0f);
 
+        fishComponent.orbitAngle += fishComponent.orbitVelocity * dt;
+        fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle,
+                fishComponent.initialAngle + targetAngle);
+    }
 
+    private void ChangeSides(@NonNullDecl FishComponent fishComponent) {
+        fishStrenght *= -1;
+        targetAngle = newAngle(fishComponent.type.maxAngle);
+        timeTilSideChange = newTimeTilSideChange(fishComponent.type.minTimeToChangeSides, fishComponent.type.maxTimeToChangeSides);
+        timeSameSide = 0f;
+    }
 
-        // --- B. SMOOTHED TENSION ---
-        float targetTension = currentFishStrenght + currentPlayerStrenght;
-        tension = lerp(tension, targetTension, dt * 10.0f);
+    private static void GET_REEL_PLAYER_INPUT(@NonNullDecl CommandBuffer<EntityStore> commandBuffer, Vector3d bobberPos, Vector3d playerPos, Ref<EntityStore> player, @NonNullDecl FishermanComponent fishermanComponent) {
+        var playerToBobber = new Vector3d(bobberPos).sub(playerPos).normalize();
+        var playerHeadRotation = commandBuffer.getComponent(player, HeadRotation.getComponentType());
+        var playerHeadDirection = playerHeadRotation.getDirection().normalize();
 
-        //set distance based on fish strength vs player strength
-        float targetDistanceChange = 0f;
-        if (fishermanComponent.getSide() * fishStrenght > 0 && (fishermanComponent.getSide() >= 0.50f || fishermanComponent.getSide() <= -0.50f)) {
-            if (fishermanComponent.getHeight() >= 0f) {
-                targetDistanceChange = Math.clamp(
-                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), -10f, 0f);
-            }
-            else {
-                targetDistanceChange = Math.clamp(
-                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), 0f,
-                        currentFishStrenght);
-            }
-        }
-        else {
-            targetDistanceChange = (currentFishStrenght * dt) * SPEED_MODIFIER;
-        }
+        double side = (playerHeadDirection.x * playerToBobber.z) - (playerHeadDirection.z * playerToBobber.x);
+        double height = playerHeadRotation.getRotation().pitch() / 1.56f;
 
-        //apply smoothing to the distance velocity
-        fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * 5.0f);
-        fishComponent.currentDistance += fishComponent.distanceVelocity;
-
-        //set position based on orbit angle and distance
-        double targetX = playerPos.x + Math.cos(fishComponent.orbitAngle) * fishComponent.currentDistance;
-        double targetZ = playerPos.z + Math.sin(fishComponent.orbitAngle) * fishComponent.currentDistance;
-        bobberTransform.setPosition(new Vector3d(targetX, bobberPos.y, targetZ));
-
-        //Bobber distance managers
-        if (distanceXZ >= 20) {
-            StopFishingEvent.dispatch(player);
-        }
-        else if (distanceXZ <= 2) {
-            SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
-            CatchFishEvent.dispatch(player, fishComponent.type.getItemId());
-            StopFishingEvent.dispatch(player);
-        }
-
-        //Rod tension managers
-        if (tension >= fishermanComponent.getMaxTension() * 2) {
-            playerRef.sendMessage(Message.raw("2X TENSION REACHED: %f".formatted(tension)));
-            StopFishingEvent.dispatch(player);
-        }
-        if (tension >= fishermanComponent.getMaxTension()) {
-            CameraControllerEvent.dispatch(player, CameraState.STRUGGLE);
-            timeAtMaxTension += dt;
-        } else {
-            timeAtMaxTension = 0f;
-        }
-        if (timeAtMaxTension >= 2) {
-            SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getLineBreakAduio(), SoundCategory.SFX, playerPos, store);
-            playerRef.sendMessage(Message.raw("LINHA QUEBROU! "));
-            StopFishingEvent.dispatch(player);
-        }
-
-
-        //fish resting and stamina toggles and manager
-        if (fishComponent.currentStamina <= 0f) {
-            fishRested = false;
-        }
-        if (fishComponent.currentStamina >= fishComponent.type.maxStamina && !fishRested) {
-            fishComponent.currentStamina = fishComponent.type.maxStamina;
-            fishRested = true;
-        }
-        if (fishRested) {
-            fishComponent.currentStamina -= dt;
-        }
-        else {
-            fishComponent.currentStamina += (dt * fishComponent.type.staminaRegen);
-        }
-
-        //TENSION% HUD (!!!!!have to activate and deactive in StarFishingHandler and StopFishingHandler to work !!!!!!)
-        /*UICommandBuilder uiCommandBuilder = new UICommandBuilder();
-        uiCommandBuilder.append("Hud/FishingHUD.ui");
-        uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %.1f %%".formatted((tension/MAX_TENSION) *100f)));
-        var customHud = playerObj.getHudManager().getCustomHud("FishingHudKey");
-        if(customHud != null) customHud.update(true, uiCommandBuilder);*/
-
-
-        //Spawn water sprint particle on bobber
-        ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos,0f,0f,0f,0.5f, 0.2f, commandBuffer);
-
-        //play reel in / reel out / max tension SFX
-        if(timeTilReelSound >= 0.3f) {
-            if(tension < fishermanComponent.getMaxTension()) {
-                if (fishComponent.distanceVelocity > 0) {
-                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelOutAudio(), SoundCategory.SFX, playerPos, store);
-                } else if (fishComponent.distanceVelocity < 0) {
-                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelInAudio(), SoundCategory.SFX, playerPos, store);
-                }
-            }else{
-                SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getMaxTensionAudio(), SoundCategory.SFX, playerPos, store);
-            }
-            timeTilReelSound = 0f;
-        }
-
-        //increase timers and reset player input
-        fishermanComponent.setSide(0);
-        fishermanComponent.setHeight(0);
-        timeSameSide += dt;
-        totalTime += dt;
-        timeTilSwimSound += dt;
-        timeTilReelSound += dt;
+        fishermanComponent.setHeight(height);
+        fishermanComponent.setSide(side);
     }
 
     private float newTimeTilSideChange(float MIN_TIME, float MAX_TIME) {

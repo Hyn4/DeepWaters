@@ -122,7 +122,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         if(timeFishing >= timeTilCatch && playerIsFishing){
             ParticleUtil.spawnParticleEffect("Alerted", position, commandBuffer);
             SoundUtil.playSoundEvent3dToPlayer(playerRef, bobberPhysicsComponent.getWaterMoveInAudio(), SoundCategory.SFX, position, store);
-            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("MORDEU!!!!! %f sec".formatted(timeTilCatch)));
+            //store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("MORDEU!!!!! %f sec".formatted(timeTilCatch)));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(true);
             timeTilCatch = setTimeTilCatch();
             timeFishing = 0f;
@@ -130,7 +130,7 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
 
         //peixe fugiu
         if(store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishBiting() && timeFishing >= REEL_IN_TIME_WINDOW){
-            store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FUGIU!!!!!"));
+            //store.getComponent(playerRef, PlayerRef.getComponentType()).sendMessage(Message.raw("FUGIU!!!!!"));
             store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).setFishBiting(false);
         }
 

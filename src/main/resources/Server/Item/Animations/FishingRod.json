@@ -10,7 +10,8 @@
     "Reel": {
       "ThirdPerson": "Characters/Animations/Reel_Animation.blockyanim",
       "FirstPerson": "Characters/Animations/Items/Main_Handed/Handgun/Attacks/Shoot/Shoot_FPS.blockyanim",
-      "Speed": 1
+      "Speed": 1,
+      "Looping": true
     }
   }
 }

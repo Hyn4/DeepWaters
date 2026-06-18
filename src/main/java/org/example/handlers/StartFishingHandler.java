@@ -37,7 +37,7 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         var rpg = store.getComponent(event.playerRef(), PlayerRPGComponent.getComponentType());
         if(rpg == null) return;
         if(rpg.isFishing()) {
-            player.sendMessage(Message.raw("Is already fishing"));
+            //player.sendMessage(Message.raw("Is already fishing"));
             return;
         }
 
@@ -66,7 +66,7 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
 
         movementManager.update(player.getPacketHandler());
 
-        player.sendMessage(Message.raw("Fishing!"));
+        //player.sendMessage(Message.raw("Fishing!"));
         rpg.setFishing(true);
     }
 }

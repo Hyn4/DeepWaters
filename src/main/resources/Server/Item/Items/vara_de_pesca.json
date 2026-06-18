@@ -67,12 +67,13 @@
             "Effects": {
               "ItemPlayerAnimationsId": "FishingRod",
               "ItemAnimationId": "Reel",
-              "WaitForAnimationToFinish": false
+              "WaitForAnimationToFinish": false,
+              "ClearAnimationOnFinish": true
             },
             "AllowIndefiniteHold": true,
-            "DisplayProgress": true,
+            "DisplayProgress": false,
             "Next": {
-              "0.1": {
+              "0.0": {
                 "Type": "fishing_interaction_id"
               }
             }

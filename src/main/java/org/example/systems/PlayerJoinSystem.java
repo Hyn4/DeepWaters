@@ -36,6 +36,7 @@ public class PlayerJoinSystem extends RefSystem<EntityStore> {
             commandBuffer.addComponent(ref,rpgType,new PlayerRPGComponent());
             playerRef.sendMessage(Message.raw("Welcome! Your adventure begins at level 1!"));
         }
+
         commandBuffer.ensureComponent(ref, FishermanComponent.getComponentType());
     }
 

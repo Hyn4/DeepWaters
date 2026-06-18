@@ -115,14 +115,14 @@ public class MyCustomInteraction extends SimpleInstantInteraction {
                 commandBuffer.addEntity(bobberHolder, AddReason.SPAWN);
             });
 
-            ref.sendMessage(Message.raw("Checkpoint 6"));
+            //ref.sendMessage(Message.raw("Checkpoint 6"));
         }else{
 
             if(rpgComponent.isFishBiting()){
-                ref.sendMessage(Message.raw("FISGADA!"));
+                //ref.sendMessage(Message.raw("FISGADA!"));
                 StartMinigameEvent.dispatch(playerRef, commandBuffer);
             }else {
-                ref.sendMessage(Message.raw("Removing bobber"));
+                //ref.sendMessage(Message.raw("Removing bobber"));
                 StopFishingEvent.dispatch(playerRef);
             }
         }

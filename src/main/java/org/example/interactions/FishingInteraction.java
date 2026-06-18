@@ -53,7 +53,7 @@ public class FishingInteraction extends SimpleInstantInteraction {
 
         fishermanComponent.switchReelingState();
 
-        commandBuffer.getComponent(player,PlayerRef.getComponentType()).sendMessage(Message.raw("IsReeling: %b".formatted(fishermanComponent.isReeling())));
+        //commandBuffer.getComponent(player,PlayerRef.getComponentType()).sendMessage(Message.raw("IsReeling: %b".formatted(fishermanComponent.isReeling())));
     }
 
 
