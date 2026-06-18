@@ -95,18 +95,60 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             ChangeSides(fishComponent);
         }
 
-        SET_ORBIT_ANGLE(dt, fishComponent);
-
         SET_CURRENT_FISH_STRENGTH(store, fishComponent, player, bobberPos);
 
-        currentPlayerStrenght = (float) getForceExerted(fishermanComponent.getHeight()) * playerRPGComponent.getFishermanStrenght();
+        // Horizontal Counter-Steering Math
+        double playerSide = fishermanComponent.getSide();
+        float fishDirection = Math.signum(fishComponent.orbitVelocity);
+        boolean isCounterSteering = false;
+        float counterSteerTension = 0f;
 
-        // --- B. SMOOTHED TENSION ---
-        float targetTension = currentFishStrenght + currentPlayerStrenght;
+        if (fishermanComponent.isReeling() && Math.signum(playerSide) != fishDirection && Math.abs(playerSide) > 0.1f) {
+            isCounterSteering = true;
+            counterSteerTension = (float) (Math.abs(playerSide) * currentFishStrenght * 0.5f);
+        }
+
+        SET_ORBIT_ANGLE(dt, fishComponent, isCounterSteering, playerSide);
+
+        // --- B. SMOOTHED TENSION & DISTANCE ---
+        float targetTension = 0f;
+        float targetDistanceChange = 0f;
+
+        if (!fishermanComponent.isReeling()) {
+            // Player let go of the wire
+            targetDistanceChange = currentFishStrenght * dt;
+            targetTension = 0f;
+            currentPlayerStrenght = 0f;
+        } else {
+            double height = fishermanComponent.getHeight();
+            float forceRatio = (float) getForceExerted(height); // -1.0 to 1.0
+
+            if (height >= 0.05f) {
+                // Looking Up (Reeling In)
+                currentPlayerStrenght = forceRatio * playerRPGComponent.getFishermanStrenght();
+                targetDistanceChange = Math.min(0f, (currentFishStrenght - currentPlayerStrenght) * dt * SPEED_MODIFIER);
+                targetTension = currentFishStrenght + currentPlayerStrenght;
+            } else if (height <= -0.05f) {
+                // Looking Down (Yielding line)
+                currentPlayerStrenght = 0f;
+                float yieldPercentage = (float) Math.abs(forceRatio);
+                targetDistanceChange = currentFishStrenght * yieldPercentage * dt * SPEED_MODIFIER;
+                targetTension = currentFishStrenght * (1.0f - yieldPercentage);
+            } else {
+                // Looking Center (close to zero)
+                currentPlayerStrenght = 0f;
+                float maxPlayerStrength = playerRPGComponent.getFishermanStrenght();
+                if (currentFishStrenght > maxPlayerStrength) {
+                    targetDistanceChange = (currentFishStrenght - maxPlayerStrength) * dt * SPEED_MODIFIER;
+                } else {
+                    targetDistanceChange = 0f;
+                }
+                targetTension = currentFishStrenght;
+            }
+            targetTension += counterSteerTension;
+        }
+
         tension = lerp(tension, targetTension, dt * 10.0f);
-
-        //set distance based on fish strength vs player strength
-        float targetDistanceChange = GET_TARGET_DISTANCE_CHANGE(dt, fishermanComponent);
 
         //apply smoothing to the distance velocity
         fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * 5.0f);
@@ -120,7 +162,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         MANAGE_TENSION(dt, store, fishermanComponent, playerRef, player, playerPos);
 
-        MANAGE_FISH_STAMINA(dt, fishComponent);
+        MANAGE_FISH_STAMINA(dt, fishComponent, isCounterSteering);
 
         //TENSION% HUD (!!!!!have to activate and deactive in StarFishingHandler and StopFishingHandler to work !!!!!!)
         /*UICommandBuilder uiCommandBuilder = new UICommandBuilder();
@@ -133,6 +175,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos,0f,0f,0f,0.5f, 0.2f, commandBuffer);
 
         PLAY_ROD_SFX(store, fishermanComponent, fishComponent, player, playerPos);
+
+        playerRef.sendMessage(Message.raw("Height: %f".formatted(fishermanComponent.getHeight())));
 
         INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
     }
@@ -162,7 +206,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
     }
 
-    private void MANAGE_FISH_STAMINA(float dt, FishComponent fishComponent) {
+    private void MANAGE_FISH_STAMINA(float dt, FishComponent fishComponent, boolean isCounterSteering) {
         //fish resting and stamina toggles and manager
         if (fishComponent.currentStamina <= 0f) {
             fishRested = false;
@@ -172,7 +216,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             fishRested = true;
         }
         if (fishRested) {
-            fishComponent.currentStamina -= dt;
+            float tireDrain = isCounterSteering ? 2.0f * dt : dt;
+            fishComponent.currentStamina -= tireDrain;
         }
         else {
             fishComponent.currentStamina += (dt * fishComponent.type.staminaRegen);
@@ -210,24 +255,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
     }
 
-    private float GET_TARGET_DISTANCE_CHANGE(float dt, @NonNullDecl FishermanComponent fishermanComponent) {
-        float targetDistanceChange = 0f;
-        if (fishermanComponent.getSide() * fishStrenght > 0 && (fishermanComponent.getSide() >= 0.50f || fishermanComponent.getSide() <= -0.50f)) {
-            if (fishermanComponent.getHeight() >= 0f) {
-                targetDistanceChange = Math.clamp(
-                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), -10f, 0f);
-            }
-            else {
-                targetDistanceChange = Math.clamp(
-                        (((currentFishStrenght * dt) - (currentPlayerStrenght * dt)) * SPEED_MODIFIER), 0f,
-                        currentFishStrenght);
-            }
-        }
-        else {
-            targetDistanceChange = (currentFishStrenght * dt) * SPEED_MODIFIER;
-        }
-        return targetDistanceChange;
-    }
+
 
     private void SET_CURRENT_FISH_STRENGTH(@NonNullDecl Store<EntityStore> store, FishComponent fishComponent, Ref<EntityStore> player, Vector3d bobberPos) {
         if (!fishRested) {
@@ -254,9 +282,14 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         currentFishStrenght = Math.abs(currentFishStrenght);
     }
 
-    private void SET_ORBIT_ANGLE(float dt, @NonNullDecl FishComponent fishComponent) {
+    private void SET_ORBIT_ANGLE(float dt, @NonNullDecl FishComponent fishComponent, boolean isCounterSteering, double playerSide) {
         // --- A. SMOOTHED ANGLE MOVEMENT ---
         float targetOrbitVelocity = fishStrenght * 0.4f;
+        
+        if (isCounterSteering) {
+            targetOrbitVelocity *= (1.0f - Math.abs(playerSide)); // Reduce velocity when counter steering
+        }
+
         // Smoothing the velocity change so the fish doesn't snap instantly when
         // changing direction
         fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * 5.0f);

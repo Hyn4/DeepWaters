@@ -62,7 +62,7 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         movementSettings.minFallSpeedToEngageRoll = Float.MAX_VALUE;
 
 
-        CameraControllerEvent.dispatch(event.playerRef(), CameraState.THIRD_PERSON);
+        //CameraControllerEvent.dispatch(event.playerRef(), CameraState.THIRD_PERSON);
 
         movementManager.update(player.getPacketHandler());
 
