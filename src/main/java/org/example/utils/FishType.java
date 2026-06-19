@@ -4,65 +4,65 @@ import java.util.Random;
 
 public enum FishType {
 
-    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 1f, 0.05f, 200),
+    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 10f, 0.05f, 200),
 
-    BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 1f, 0.20f, 180),
+    BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 15f, 0.20f, 180),
 
-    SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 1f, 0.50f, 100),
+    SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100),
 
-    TROUT_RAINBOW("Fish_Trout_Rainbow_Item", 9f, 0.6f, 1.5f, 4.0f, 0.65f, 0.35f, 22f, 1f, 0.40f, 90),
+    TROUT_RAINBOW("Fish_Trout_Rainbow_Item", 9f, 0.6f, 1.5f, 4.0f, 0.65f, 0.35f, 22f, 50f, 0.40f, 90),
 
-    CATFISH("Fish_Catfish_Item", 12f, 0.4f, 3.0f, 8.0f, 0.50f, 0.25f, 30f, 1f, 0.80f, 70),
+    CATFISH("Fish_Catfish_Item", 12f, 0.4f, 3.0f, 8.0f, 0.50f, 0.25f, 30f, 30f, 0.80f, 70),
 
-    PIKE("Fish_Pike_Item", 10f, 0.6f, 2.0f, 6.0f, 0.40f, 0.30f, 35f, 1f, 0.90f, 60),
+    PIKE("Fish_Pike_Item", 10f, 0.6f, 2.0f, 6.0f, 0.40f, 0.30f, 35f, 65f, 0.90f, 60),
 
-    SNAPJAW("Fish_Snapjaw_Item", 7f, 0.8f, 0.8f, 2.5f, 0.70f, 0.20f, 28f, 1f, 0.60f, 80),
+    SNAPJAW("Fish_Snapjaw_Item", 7f, 0.8f, 0.8f, 2.5f, 0.70f, 0.20f, 28f, 55f, 0.60f, 80),
 
-    CLOWNFISH("Fish_Clownfish_Item", 2f, 2.0f, 1.0f, 3.0f, 0.90f, 0.60f, 3f, 1f, 0.10f, 160),
+    CLOWNFISH("Fish_Clownfish_Item", 2f, 2.0f, 1.0f, 3.0f, 0.90f, 0.60f, 3f, 12f, 0.10f, 160),
 
-    TANG_BLUE("Fish_Tang_Blue_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 1f, 0.25f, 120),
+    TANG_BLUE("Fish_Tang_Blue_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 25f, 0.25f, 120),
 
-    TANG_CHEVRON("Fish_Tang_Chevron_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 1f, 0.25f, 120),
+    TANG_CHEVRON("Fish_Tang_Chevron_Item", 6f, 0.9f, 1.0f, 3.0f, 0.70f, 0.40f, 12f, 25f, 0.25f, 120),
 
-    TANG_LEMON_PEEL("Fish_Tang_Lemon_Peel_Item", 5.5f, 0.95f, 1.2f, 3.5f, 0.70f, 0.40f, 10f, 1f, 0.22f, 120),
+    TANG_LEMON_PEEL("Fish_Tang_Lemon_Peel_Item", 5.5f, 0.95f, 1.2f, 3.5f, 0.70f, 0.40f, 10f, 28f, 0.22f, 120),
 
-    TANG_SAILFIN("Fish_Tang_Sailfin_Item", 7f, 0.8f, 1.0f, 3.5f, 0.65f, 0.35f, 14f, 1f, 0.30f, 110),
+    TANG_SAILFIN("Fish_Tang_Sailfin_Item", 7f, 0.8f, 1.0f, 3.5f, 0.65f, 0.35f, 14f, 30f, 0.30f, 110),
 
-    JELLYFISH_BLUE("Fish_Jellyfish_Blue_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
+    JELLYFISH_BLUE("Fish_Jellyfish_Blue_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 5f, 0.30f, 130),
 
-    JELLYFISH_CYAN("Fish_Jellyfish_Cyan_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
+    JELLYFISH_CYAN("Fish_Jellyfish_Cyan_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 5f, 0.30f, 130),
 
-    JELLYFISH_GREEN("Fish_Jellyfish_Green_Item", 4.5f, 1.1f, 2.5f, 7.0f, 0.60f, 0.50f, 8f, 1f, 0.35f, 120),
+    JELLYFISH_GREEN("Fish_Jellyfish_Green_Item", 4.5f, 1.1f, 2.5f, 7.0f, 0.60f, 0.50f, 8f, 8f, 0.35f, 120),
 
-    JELLYFISH_RED("Fish_Jellyfish_Red_Item", 5f, 1.0f, 2.5f, 7.0f, 0.65f, 0.45f, 10f, 1f, 0.35f, 110),
+    JELLYFISH_RED("Fish_Jellyfish_Red_Item", 5f, 1.0f, 2.5f, 7.0f, 0.65f, 0.45f, 10f, 10f, 0.35f, 110),
 
-    JELLYFISH_YELLOW("Fish_Jellyfish_Yellow_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 1f, 0.30f, 130),
+    JELLYFISH_YELLOW("Fish_Jellyfish_Yellow_Item", 4f, 1.2f, 3.0f, 8.0f, 0.60f, 0.50f, 6f, 5f, 0.30f, 130),
 
-    PUFFERFISH("Fish_Pufferfish_Item", 5f, 1.0f, 0.8f, 3.0f, 0.85f, 0.40f, 9f, 1f, 0.20f, 100),
+    PUFFERFISH("Fish_Pufferfish_Item", 5f, 1.0f, 0.8f, 3.0f, 0.85f, 0.40f, 9f, 15f, 0.20f, 100),
 
-    EEL_MORAY("Fish_Eel_Moray_Item", 10f, 0.5f, 3.0f, 7.0f, 0.30f, 0.20f, 20f, 1f, 1.20f, 60),
+    EEL_MORAY("Fish_Eel_Moray_Item", 10f, 0.5f, 3.0f, 7.0f, 0.30f, 0.20f, 20f, 40f, 1.20f, 60),
 
-    FROSTGILL("Fish_Frostgill_Item", 6f, 0.9f, 0.8f, 2.5f, 0.65f, 0.30f, 25f, 1f, 0.35f, 50),
+    FROSTGILL("Fish_Frostgill_Item", 6f, 0.9f, 0.8f, 2.5f, 0.65f, 0.30f, 25f, 35f, 0.35f, 50),
 
-    CRAB("Fish_Crab_Item", 15f, 0.3f, 4.0f, 10.0f, 0.40f, 0.15f, 24f, 1f, 0.20f, 65),
+    CRAB("Fish_Crab_Item", 15f, 0.3f, 4.0f, 10.0f, 0.40f, 0.15f, 24f, 8f, 0.20f, 65),
 
-    LOBSTER("Fish_Lobster_Item", 14f, 0.35f, 5.0f, 12.0f, 0.35f, 0.15f, 26f, 1f, 0.40f, 55),
+    LOBSTER("Fish_Lobster_Item", 14f, 0.35f, 5.0f, 12.0f, 0.35f, 0.15f, 26f, 12f, 0.40f, 55),
 
-    SHELLFISH_LAVA("Fish_Shellfish_Lava_Item", 8f, 1.2f, 1.5f, 4.0f, 0.60f, 0.30f, 32f, 1f, 0.30f, 30),
+    SHELLFISH_LAVA("Fish_Shellfish_Lava_Item", 8f, 1.2f, 1.5f, 4.0f, 0.60f, 0.30f, 32f, 20f, 0.30f, 30),
 
-    JELLYFISH_MAN_OF_WAR("Fish_Jellyfish_Man_Of_War_Item", 8f, 0.7f, 2.0f, 5.0f, 0.75f, 0.35f, 20f, 1f, 0.50f, 20),
+    JELLYFISH_MAN_OF_WAR("Fish_Jellyfish_Man_Of_War_Item", 8f, 0.7f, 2.0f, 5.0f, 0.75f, 0.35f, 20f, 15f, 0.50f, 20),
 
-    PIRANHA("Fish_Piranha_Item", 6f, 1.2f, 0.5f, 1.5f, 0.80f, 0.30f, 40f, 1f, 0.30f, 25),
+    PIRANHA("Fish_Piranha_Item", 6f, 1.2f, 0.5f, 1.5f, 0.80f, 0.30f, 40f, 75f, 0.30f, 25),
 
-    PIRANHA_BLACK("Fish_Piranha_Black_Item", 8f, 1.0f, 0.5f, 1.5f, 0.80f, 0.25f, 52f, 1f, 0.35f, 15),
+    PIRANHA_BLACK("Fish_Piranha_Black_Item", 8f, 1.0f, 0.5f, 1.5f, 0.80f, 0.25f, 52f, 85f, 0.35f, 15),
 
-    SHARK("Fish_Shark_Hammerhead_Item", 20f, 0.2f, 4.0f, 9.0f, 0.75f, 0.30f, 70f, 1f, 3.50f, 10),
+    SHARK("Fish_Shark_Hammerhead_Item", 20f, 0.2f, 4.0f, 9.0f, 0.75f, 0.30f, 70f, 90f, 3.50f, 10),
 
-    TRILOBITE("Fish_Trilobite_Item", 18f, 0.2f, 6.0f, 14.0f, 0.50f, 0.10f, 75f, 1f, 0.50f, 8),
+    TRILOBITE("Fish_Trilobite_Item", 18f, 0.2f, 6.0f, 14.0f, 0.50f, 0.10f, 75f, 15f, 0.50f, 8),
 
-    TRILOBITE_BLACK("Fish_Trilobite_Black_Item", 20f, 0.2f, 7.0f, 15.0f, 0.50f, 0.10f, 85f, 1f, 0.55f, 5),
+    TRILOBITE_BLACK("Fish_Trilobite_Black_Item", 20f, 0.2f, 7.0f, 15.0f, 0.50f, 0.10f, 85f, 20f, 0.55f, 5),
 
-    WHALE_HUMPBACK("Fish_Whale_Humpback_Item", 30f, 0.15f, 8.0f, 20.0f, 0.40f, 0.05f, 100f, 1f, 15.00f, 2);
+    WHALE_HUMPBACK("Fish_Whale_Humpback_Item", 30f, 0.15f, 8.0f, 20.0f, 0.40f, 0.05f, 100f, 40f, 15.00f, 2);
 
 
 
@@ -112,6 +112,28 @@ public enum FishType {
                 return f;
         }
         return MINNOW; // fallback, should never be reached
+    }
+
+    public enum SizeClass {
+        TINY(0.3f),
+        SMALL(0.7f),
+        MEDIUM(1f),
+        BIG(2f),
+        COLOSSAL(3f);
+
+        public final float particleScale;
+
+        SizeClass(float particleScale) {
+            this.particleScale = particleScale;
+        }
+    }
+
+    public SizeClass getSizeClass() {
+        if (size < 0.15f) return SizeClass.TINY;
+        if (size < 0.40f) return SizeClass.SMALL;
+        if (size < 1.00f) return SizeClass.MEDIUM;
+        if (size < 4.00f) return SizeClass.BIG;
+        return SizeClass.COLOSSAL;
     }
 
     @Override
