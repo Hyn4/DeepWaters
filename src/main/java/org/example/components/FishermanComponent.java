@@ -73,7 +73,7 @@ public class FishermanComponent implements Component<EntityStore> {
     }
 
     private boolean isReeling;
-    private float maxTension = 100f;
+    private float maxTension = 0.7f;
 
     public final String REEL_IN_SFX = "SFX_Reel_In";
     public final String REEL_OUT_SFX = "SFX_Reel_Out";

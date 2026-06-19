@@ -24,7 +24,7 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
         var player = store.getComponent(playerRef, PlayerRef.getComponentType());
         var playerTransform = store.getComponent(playerRef, TransformComponent.getComponentType());
         var rot  = playerTransform.getRotation();
-
+        var intensity = 0.03f;
 
         ServerCameraSettings settings = new ServerCameraSettings();
 
@@ -65,12 +65,13 @@ public class CameraControllerHandler implements Consumer<CameraControllerEvent> 
             }
 
             case STRUGGLE -> {
-                settings.isFirstPerson = false;
+                //settings.isFirstPerson = false;
                 settings.positionLerpSpeed = 0.05F; // Extremely smooth/laggy
                 settings.rotationLerpSpeed = 0.05F;
+                if(event.intensity() > 0) intensity = event.intensity();
 
-                // Set high-intensity shake
-                player.getPacketHandler().writeNoCache(new CameraShakeEffect(1, 0.03F, AccumulationMode.Set));
+
+                player.getPacketHandler().writeNoCache(new CameraShakeEffect(1, intensity, AccumulationMode.Sum));
             }
 
             case null, default -> {

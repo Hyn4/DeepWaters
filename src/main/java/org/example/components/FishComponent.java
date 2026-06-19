@@ -56,6 +56,7 @@ public class FishComponent implements Component<EntityStore> {
     public float currentDistance;
     public double orbitAngle = 0f;
     public float currentStamina;
+    public int side = 1;
 
     public FishType type;
 

@@ -12,14 +12,15 @@ import javax.annotation.Nonnull;
 
 public record CameraControllerEvent(
         @Nonnull Ref<EntityStore> playerRef,
-        @Nonnull CameraState cameraState
+        @Nonnull CameraState cameraState,
+        float intensity
         )implements IEvent<Void>{
-    public static void dispatch(Ref<EntityStore> playerRef, CameraState cameraState){
+    public static void dispatch(Ref<EntityStore> playerRef, CameraState cameraState, float intensity){
         IEventDispatcher<CameraControllerEvent, CameraControllerEvent> dispatcher =
                 HytaleServer.get().getEventBus().dispatchFor(CameraControllerEvent.class);
 
         if(dispatcher.hasListener()){
-            dispatcher.dispatch(new CameraControllerEvent(playerRef, cameraState));
+            dispatcher.dispatch(new CameraControllerEvent(playerRef, cameraState, intensity));
         }
     }
 }
