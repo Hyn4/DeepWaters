@@ -81,7 +81,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
 
-        MANAGE_DISTANCE(store, distanceXZ, player, fishComponent, playerPos);
+
 
         //if (!inWater) playerRef.sendMessage(Message.raw("NOT IN WATER!!!"));
 
@@ -148,10 +148,24 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             targetTension += counterSteerTension;
         }
 
+        targetDistanceChange = Math.clamp(targetDistanceChange, -0.1f,0.1f);
+
+        if (distanceXZ >= 7) {
+            if(targetDistanceChange > 0) {
+                targetDistanceChange = 0f;
+                targetTension = currentFishStrenght;
+            }
+        }
+        else if (distanceXZ <= 2) {
+            SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
+            CatchFishEvent.dispatch(player, fishComponent.type.getItemId());
+            StopFishingEvent.dispatch(player);
+        }
+
         tension = lerp(tension, targetTension, dt * 10.0f);
 
         //apply smoothing to the distance velocity
-        fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * 5.0f);
+        fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * 2.0f);
         fishComponent.currentDistance += fishComponent.distanceVelocity;
 
         //set position based on orbit angle and distance
@@ -176,7 +190,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         PLAY_ROD_SFX(store, fishermanComponent, fishComponent, player, playerPos);
 
-        playerRef.sendMessage(Message.raw("Height: %f".formatted(fishermanComponent.getHeight())));
+        //playerRef.sendMessage(Message.raw("tension: %f".formatted(tension)));
 
         INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
     }
@@ -243,16 +257,9 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
     }
 
-    private static void MANAGE_DISTANCE(@NonNullDecl Store<EntityStore> store, double distanceXZ, Ref<EntityStore> player, FishComponent fishComponent, Vector3d playerPos) {
+    private static void MANAGE_DISTANCE(@NonNullDecl Store<EntityStore> store, double distanceXZ, Ref<EntityStore> player, FishComponent fishComponent, Vector3d playerPos, float targetDistance, float currentFishStrenght, float targetTension) {
         //Bobber distance managers
-        if (distanceXZ >= 20) {
-            StopFishingEvent.dispatch(player);
-        }
-        else if (distanceXZ <= 2) {
-            SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
-            CatchFishEvent.dispatch(player, fishComponent.type.getItemId());
-            StopFishingEvent.dispatch(player);
-        }
+
     }
 
 
@@ -292,7 +299,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         // Smoothing the velocity change so the fish doesn't snap instantly when
         // changing direction
-        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * 5.0f);
+        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * 2.0f);
 
         fishComponent.orbitAngle += fishComponent.orbitVelocity * dt;
         fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle,
@@ -302,7 +309,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private void ChangeSides(@NonNullDecl FishComponent fishComponent) {
         fishStrenght *= -1;
         targetAngle = newAngle(fishComponent.type.maxAngle);
-        timeTilSideChange = newTimeTilSideChange(fishComponent.type.minTimeToChangeSides, fishComponent.type.maxTimeToChangeSides);
+        timeTilSideChange = newTimeTilSideChange(fishComponent.type.minTimeToChangeSides, fishComponent.type.maxTimeToChangeSides) * 3f;
         timeSameSide = 0f;
     }
 
@@ -331,7 +338,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     }
 
     private double getForceExerted(double height) {
-        return (Math.clamp(height, -0.20f, 0.20f)) / 0.20f;
+        return (Math.clamp(height, -0.15f, 0.15f)) / 0.15f;
     }
 
 
