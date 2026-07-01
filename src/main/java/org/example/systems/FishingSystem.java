@@ -87,7 +87,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             initialize(archetypeChunk, index, store);
         }
 
-
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
 
@@ -115,7 +114,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         double playerSide = fishermanComponent.getSide();
         float fishDirection = Math.signum(fishComponent.orbitVelocity);
         boolean isCounterSteering = false;
-        float counterSteerTension = 0f;
 
         if (fishermanComponent.isReeling() && Math.signum(playerSide) != fishDirection && Math.abs(playerSide) > 0.1f)
             isCounterSteering = true;
