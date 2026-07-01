@@ -42,6 +42,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     PlayerRef playerRef;
 
     // Minigame Session State
+    private boolean reelingIn;
     private boolean isInitialized = false;
     private float fishBaseStrength;
     private float playerBaseStrength;
@@ -85,6 +86,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         if (!isInitialized) {
             initialize(archetypeChunk, index, store);
         }
+
 
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
@@ -201,6 +203,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
     }
 
+
     private void INCREASE_TIMERS_RESET_INPUT(float dt, FishermanComponent fishermanComponent) {
         fishermanComponent.setSide(0);
         fishermanComponent.setHeight(0);
@@ -215,15 +218,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         if (timeTilReelSound >= 0.3f) {
             if (tension < maxTension) {
                 if (fishComponent.distanceVelocity > 0) {
-                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelOutAudio(), SoundCategory.SFX,
-                            playerPos, store);
-                } else if (fishComponent.distanceVelocity < 0) {
-                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelInAudio(), SoundCategory.SFX,
-                            playerPos, store);
+                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelOutAudio(), SoundCategory.SFX, playerPos, store);
+                } else if (fishComponent.distanceVelocity <= 0) {
+                    SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getReelInAudio(), SoundCategory.SFX, playerPos, store);
                 }
             } else {
-                SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getMaxTensionAudio(), SoundCategory.SFX,
-                        playerPos, store);
+                SoundUtil.playSoundEvent3dToPlayer(player, fishermanComponent.getMaxTensionAudio(), SoundCategory.SFX, playerPos, store);
             }
             timeTilReelSound = 0f;
         }
@@ -381,6 +381,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.timeTilReelSound = 0f;
         this.timeTilSwimSound = 0f;
         this.timeSameSide = 0f;
+        this.reelingIn = false;
 
         this.isInitialized = true;
     }

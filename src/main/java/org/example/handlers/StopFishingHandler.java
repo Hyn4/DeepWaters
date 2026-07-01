@@ -78,9 +78,6 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
         movementManager.applyDefaultSettings();
 
         movementManager.update(player.getPacketHandler());
-
-        //CameraControllerEvent.dispatch(event.playerRef(), CameraState.DEFAULT);
-
         //player.sendMessage(Message.raw("Stopped fishing!"));
         rpg.setFishing(false);
     }
