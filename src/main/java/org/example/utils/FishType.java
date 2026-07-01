@@ -10,16 +10,21 @@ import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.world.WorldMapTracker;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.worldgen.zone.Zone;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public enum FishType {
 
-    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 10f, 0.05f, 200),
+    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 10f, 0.05f, 200,
+            new boolean[][]{{true,true,true},{false,false,false},{true,true,true},{false,false,false}}),
 
-    BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 15f, 0.20f, 180),
+    BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 15f, 0.20f, 180,
+            new boolean[][]{{false,false,false},{true,true,true},{false,false,false},{true,true,true}});
 
-    SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100),
+   /* SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100),
 
     TROUT_RAINBOW("Fish_Trout_Rainbow_Item", 9f, 0.6f, 1.5f, 4.0f, 0.65f, 0.35f, 22f, 50f, 0.40f, 90),
 
@@ -74,7 +79,7 @@ public enum FishType {
     TRILOBITE_BLACK("Fish_Trilobite_Black_Item", 20f, 0.2f, 7.0f, 15.0f, 0.50f, 0.10f, 85f, 20f, 0.55f, 5),
 
     WHALE_HUMPBACK("Fish_Whale_Humpback_Item", 30f, 0.15f, 8.0f, 20.0f, 0.40f, 0.05f, 100f, 40f, 15.00f, 2);
-
+*/
 
 
     private final String itemId;
@@ -88,11 +93,12 @@ public enum FishType {
     public final float speed; // reserved for future use
     public final float size; // average size in meters (also signals reward value)
     public final int weight; // rarity weight — higher = more common
+    public final boolean[][] zoneXtier;
 
     FishType(String itemId, float maxStamina, float staminaRegen,
              float minTimeToChangeSides, float maxTimeToChangeSides,
              float maxAngle, float tiredFishStrenghtModifier,
-             float strength, float speed, float size, int weight) {
+             float strength, float speed, float size, int weight, boolean[][] zoneXtier) {
         this.itemId = itemId;
         this.maxStamina = maxStamina;
         this.staminaRegen = staminaRegen;
@@ -104,6 +110,11 @@ public enum FishType {
         this.speed = speed;
         this.size = size;
         this.weight = weight;
+        this.zoneXtier = zoneXtier;
+    }
+
+    public static boolean zoneXtierCheck(FishType fishType, ZoneInfo zoneInfo){
+        return fishType.zoneXtier[zoneInfo.zone()][zoneInfo.tier()];
     }
 
     public String getItemId() {
@@ -123,6 +134,16 @@ public enum FishType {
                 return f;
         }
         return MINNOW; // fallback, should never be reached
+    }
+
+    public static ArrayList<FishType> getFishPool(ZoneInfo zoneInfo){
+        ArrayList<FishType> fishPool = new ArrayList<FishType>();
+
+        for (FishType f : values()){
+            if(zoneXtierCheck(f,zoneInfo)) fishPool.add(f);
+        }
+
+        return fishPool;
     }
 
     public enum SizeClass {

@@ -13,8 +13,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public record FishingContext(
         int hour,
-        String zone,
-        int tier,
+        ZoneInfo zoneInfo,
         double yPos,
         int waterDepth
 ) {
@@ -40,23 +39,25 @@ public record FishingContext(
 
             // 4. Calculate depth relative to the bobber
             depth = (int) (position.y - floorY);
+        }else{
+            return FishingContext.defaultContext();
         }
 
-        return new FishingContext(currentHour,zoneInfo.zone(), zoneInfo.tier(), position.y, depth);
+        return new FishingContext(currentHour,zoneInfo, position.y, depth);
     }
 
     public static FishingContext defaultContext(){
-        return new FishingContext(12,"1",1,115,5);
+        return new FishingContext(12,new ZoneInfo(-1,1),115,5);
     }
 
     public String ToString(){
         return String.format(
             """
             [CONTEXT]
-              Zone  : %s | Tier  : %d
+              Zone  : %d | Tier  : %d
               Depth : %d  |  Y position : %f | Hour : %d
             """,
-            zone, tier,
+            zoneInfo.zone(), zoneInfo.tier(),
             waterDepth, yPos, hour
         );
     }

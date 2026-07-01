@@ -8,16 +8,16 @@ public class EnvironmentParser {
     private static final Pattern TIER_PATTERN = Pattern.compile("Tier(\\d+)", Pattern.CASE_INSENSITIVE);
 
     public static ZoneInfo parse(String input) {
-        if (input == null || input.isEmpty()) return new ZoneInfo("Unknown", 1, "None");
+        if (input == null || input.isEmpty()) return new ZoneInfo(-1, 1);
 
         // Zone1 -> "1"
-        String zone = "Global";
+        int zone = -1;//global
         Matcher zoneMatcher = ZONE_PATTERN.matcher(input);
         if (zoneMatcher.find()) {
-            zone = zoneMatcher.group(1);
+            zone = Integer.parseInt(zoneMatcher.group(1));
         } else if (input.toLowerCase().contains("ocean")) {
             // Edge case for Oceans
-            zone = "0";
+            zone = 0;
         }
 
         // Tier
@@ -30,15 +30,15 @@ public class EnvironmentParser {
 
         // descriptor
         // Edge case
-        String descriptor = input
+        /*String descriptor = input
                 .replaceAll("(?i)Zone\\d+_?", "")
                 .replaceAll("(?i)_?Tier\\d+", "")
                 .replace("_", " ")
                 .trim();
 
-        if (descriptor.isEmpty()) descriptor = "General";
+        if (descriptor.isEmpty()) descriptor = "General";*/
 
-        return new ZoneInfo(zone, tier, descriptor);
+        return new ZoneInfo(zone, tier);
     }
 
 }

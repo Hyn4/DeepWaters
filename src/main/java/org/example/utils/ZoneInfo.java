@@ -1,11 +1,10 @@
 package org.example.utils;
 
 public record ZoneInfo(
-        String zone,
-        int tier,
-        String descriptor) {
+        int zone,
+        int tier) {
     @Override
     public String toString() {
-        return String.format("Zone: %s | Tier: %d | Type: %s", zone, tier, descriptor);
+        return String.format("Zone: %d | Tier: %d", zone, tier);
     }
 }

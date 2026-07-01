@@ -36,17 +36,6 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var playerRef = store.getComponent(event.player(), PlayerRef.getComponentType());
         var commandBuffer = event.commandBuffer();
         var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
-        /*WorldTimeResource timeResource = store.getResource(WorldTimeResource.getResourceType());
-        int currentHour = timeResource.getCurrentHour();
-
-        var worldMapTracker = store.getComponent(event.player(), Player.getComponentType()).getWorldMapTracker();
-
-        String currentBiomeName = worldMapTracker.getCurrentBiomeName();
-        WorldMapTracker.ZoneDiscoveryInfo currentZone = worldMapTracker.getCurrentZone();
-
-        String regionName = currentZone.regionName();
-        String zoneName = currentZone.zoneName();
-*/
 
         var rpgComponent = store.getComponent(event.player(), PlayerRPGComponent.getComponentType());
 
@@ -69,23 +58,6 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var playerId = bobberPyhsicsComponent.getPlayerId();
 
         var bobberPos = store.getComponent(bobberRef,TransformComponent.getComponentType()).getPosition();
-
-        /*long chunkIndex = ChunkUtil.indexChunkFromBlock(bobberPos.x, bobberPos.z);
-        WorldChunk chunk = store.getExternalData().getWorld().getChunk(chunkIndex);
-        if (chunk != null) {
-            // 2. Get local coordinates inside the chunk (0-31)
-            int localX = (int) bobberPos.x & ChunkUtil.SIZE_MASK;
-            int localZ = (int) bobberPos.z & ChunkUtil.SIZE_MASK;
-
-
-            // 3. Query the chunk's heightmap to get the sea-floor Y level
-            short floorY = chunk.getHeight(localX, localZ);
-
-
-            // 4. Calculate depth relative to the bobber
-            double depth = bobberPos.y - floorY;
-
-        }*/
 
         playerRef.sendMessage(Message.raw(FishingContext.getContext(bobberPos,store,event.player()).ToString()));
 
