@@ -7,6 +7,7 @@ import com.hypixel.hytale.server.core.entity.ItemUtils;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.WorldMapTracker;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
@@ -20,6 +21,7 @@ import org.example.events.GiveXPEvent;
 import org.example.events.StartMinigameEvent;
 import org.example.events.StopFishingEvent;
 import org.example.utils.FishType;
+import org.example.utils.FishingContext;
 import org.joml.Vector3d;
 
 import java.util.Random;
@@ -34,6 +36,8 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var playerRef = store.getComponent(event.player(), PlayerRef.getComponentType());
         var commandBuffer = event.commandBuffer();
         var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
+        /*WorldTimeResource timeResource = store.getResource(WorldTimeResource.getResourceType());
+        int currentHour = timeResource.getCurrentHour();
 
         var worldMapTracker = store.getComponent(event.player(), Player.getComponentType()).getWorldMapTracker();
 
@@ -42,7 +46,7 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         String regionName = currentZone.regionName();
         String zoneName = currentZone.zoneName();
-
+*/
 
         var rpgComponent = store.getComponent(event.player(), PlayerRPGComponent.getComponentType());
 
@@ -66,7 +70,7 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
         var bobberPos = store.getComponent(bobberRef,TransformComponent.getComponentType()).getPosition();
 
-        long chunkIndex = ChunkUtil.indexChunkFromBlock(bobberPos.x, bobberPos.z);
+        /*long chunkIndex = ChunkUtil.indexChunkFromBlock(bobberPos.x, bobberPos.z);
         WorldChunk chunk = store.getExternalData().getWorld().getChunk(chunkIndex);
         if (chunk != null) {
             // 2. Get local coordinates inside the chunk (0-31)
@@ -80,8 +84,10 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
 
             // 4. Calculate depth relative to the bobber
             double depth = bobberPos.y - floorY;
-            playerRef.sendMessage(Message.raw("depth: %f".formatted(depth)));
-        }
+
+        }*/
+
+        playerRef.sendMessage(Message.raw(FishingContext.getContext(bobberPos,store,event.player()).ToString()));
 
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));

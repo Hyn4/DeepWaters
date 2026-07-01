@@ -1,5 +1,16 @@
 package org.example.utils;
 
+import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.util.ChunkUtil;
+import com.hypixel.hytale.protocol.Position;
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
+import com.hypixel.hytale.server.core.universe.world.WorldMapTracker;
+import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+
 import java.util.Random;
 
 public enum FishType {
@@ -128,6 +139,21 @@ public enum FishType {
         }
     }
 
+    public enum ActiveTime {
+        DAY(4,20),
+        NIGHT(21,3),
+        AFTERNOON(12,20),
+        MORNING(4,11),
+        DUSK(21,24),
+        DAWN(0,3),
+        ALL(0,24);
+
+        public final int start;
+        public final int end;
+
+        ActiveTime(int start, int end){this.start = start; this.end = end;}
+    }
+
     public SizeClass getSizeClass() {
         if (size < 0.15f) return SizeClass.TINY;
         if (size < 0.40f) return SizeClass.SMALL;
@@ -139,16 +165,17 @@ public enum FishType {
     @Override
     public String toString() {
         return String.format(
-                """
-                        [%s]
-                          Item      : %s
-                          Strength  : %.0f  |  Size: %.2fm  |  Weight(rarity): %d
-                          Stamina   : %.1fs (regen %.2f/s)  |  Tired modifier: %.0f%%
-                          Side change: %.1f - %.1f s  |  Max arc: %.2f rad
-                        """,
-                name(), itemId,
-                strength, size, weight,
-                maxStamina, staminaRegen, tiredFishStrenghtModifier * 100f,
-                minTimeToChangeSides, maxTimeToChangeSides, maxAngle);
+            """
+            [%s]
+              Item      : %s
+              Strength  : %.0f  |  Size: %.2fm  |  Weight(rarity): %d
+              Stamina   : %.1fs (regen %.2f/s)  |  Tired modifier: %.0f%%
+              Side change: %.1f - %.1f
+            """,
+            name(), itemId,
+            strength, size, weight,
+            maxStamina, staminaRegen, tiredFishStrenghtModifier * 100f,
+            minTimeToChangeSides, maxTimeToChangeSides);
+        }
     }
-}
+
