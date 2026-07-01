@@ -6,5 +6,7 @@ public enum CameraState {
     LEFT,
     RIGHT,
     STRUGGLE,
-    SNAP
+    SNAP,
+    REEL_IN,
+    REEL_OUT
 }

@@ -1,11 +1,15 @@
 package org.example.handlers;
 
 
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.ItemUtils;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.WorldMapTracker;
+import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.npc.util.InventoryHelper;
 import org.example.components.BobberPhysicsComponent;
 import org.example.components.FishComponent;
@@ -31,6 +35,15 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var commandBuffer = event.commandBuffer();
         var playerPos = store.getComponent(event.player(), TransformComponent.getComponentType()).getPosition();
 
+        var worldMapTracker = store.getComponent(event.player(), Player.getComponentType()).getWorldMapTracker();
+
+        String currentBiomeName = worldMapTracker.getCurrentBiomeName();
+        WorldMapTracker.ZoneDiscoveryInfo currentZone = worldMapTracker.getCurrentZone();
+
+        String regionName = currentZone.regionName();
+        String zoneName = currentZone.zoneName();
+
+
         var rpgComponent = store.getComponent(event.player(), PlayerRPGComponent.getComponentType());
 
         var bobberRef = store.getExternalData().getRefFromUUID(rpgComponent.getBobberId());
@@ -52,6 +65,23 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         var playerId = bobberPyhsicsComponent.getPlayerId();
 
         var bobberPos = store.getComponent(bobberRef,TransformComponent.getComponentType()).getPosition();
+
+        long chunkIndex = ChunkUtil.indexChunkFromBlock(bobberPos.x, bobberPos.z);
+        WorldChunk chunk = store.getExternalData().getWorld().getChunk(chunkIndex);
+        if (chunk != null) {
+            // 2. Get local coordinates inside the chunk (0-31)
+            int localX = (int) bobberPos.x & ChunkUtil.SIZE_MASK;
+            int localZ = (int) bobberPos.z & ChunkUtil.SIZE_MASK;
+
+
+            // 3. Query the chunk's heightmap to get the sea-floor Y level
+            short floorY = chunk.getHeight(localX, localZ);
+
+
+            // 4. Calculate depth relative to the bobber
+            double depth = bobberPos.y - floorY;
+            playerRef.sendMessage(Message.raw("depth: %f".formatted(depth)));
+        }
 
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));

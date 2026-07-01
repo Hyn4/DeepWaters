@@ -6,6 +6,7 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
@@ -17,6 +18,7 @@ import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -69,6 +71,22 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         Vector3d position = new Vector3d(transform.getPosition());
         Vector3d velocity = new Vector3d();
         velocityComp.assignVelocityTo(velocity);
+
+
+        long chunkIndex = ChunkUtil.indexChunkFromBlock(position.x,position.z);
+        WorldChunk chunk = world.getChunk(chunkIndex);
+
+        if (chunk != null) {
+            // 2. Get local coordinates inside the chunk (0-31)
+            int localX = (int) position.x & ChunkUtil.SIZE_MASK;
+            int localZ = (int) position.z & ChunkUtil.SIZE_MASK;
+
+            // 3. Query the chunk's heightmap to get the sea-floor Y level
+            short floorY = chunk.getHeight(localX, localZ);
+
+            // 4. Calculate depth relative to the bobber
+            double depth = position.y - floorY;
+        }
 
 
         double distance = new Vector3d(playerPos.x, playerPos.y, playerPos.z)
