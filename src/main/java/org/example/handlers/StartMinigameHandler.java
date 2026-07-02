@@ -67,7 +67,8 @@ public class StartMinigameHandler implements Consumer<StartMinigameEvent> {
         double dx = bobberPos.x - playerPos.x;
         double dz = bobberPos.z - playerPos.z;
 
-        FishType fishType = FishType.getWeightedRandom(new Random());
+        FishingContext context = FishingContext.getContext(bobberPos, store, event.player());
+        FishType fishType = FishType.getRandomFish(context,new Random());
 
         playerRef.sendMessage(Message.raw(fishType.toString()));
 

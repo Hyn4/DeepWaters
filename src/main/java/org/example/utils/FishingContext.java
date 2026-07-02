@@ -26,7 +26,7 @@ public record FishingContext(
         WorldChunk chunk = store.getExternalData().getWorld().getChunk(chunkIndex);
         WorldTimeResource timeResource = store.getResource(WorldTimeResource.getResourceType());
         int currentHour = timeResource.getCurrentHour();
-        int depth = 0;
+        int depth;
         if (chunk != null) {
             // 2. Get local coordinates inside the chunk (0-31)
             int localX = (int) position.x & ChunkUtil.SIZE_MASK;
@@ -43,11 +43,17 @@ public record FishingContext(
             return FishingContext.defaultContext();
         }
 
+        //checks
+        assert 0 <= zoneInfo.zone() && zoneInfo.zone() <= 4;
+        assert 1 <= zoneInfo.tier() && zoneInfo.tier() <= 3;
+        assert 0 <= currentHour && currentHour < 25;
+        assert 0 < depth;
+
         return new FishingContext(currentHour,zoneInfo, position.y, depth);
     }
 
     public static FishingContext defaultContext(){
-        return new FishingContext(12,new ZoneInfo(-1,1),115,5);
+        return new FishingContext(12,new ZoneInfo(0,1),115,5);
     }
 
     public String ToString(){

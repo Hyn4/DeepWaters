@@ -1,32 +1,46 @@
 package org.example.utils;
 
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.protocol.Position;
-import com.hypixel.hytale.server.core.Message;
-import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.modules.time.WorldTimeResource;
-import com.hypixel.hytale.server.core.universe.world.WorldMapTracker;
-import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.worldgen.zone.Zone;
+import com.hypixel.hytale.math.Range;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public enum FishType {
 
     MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 10f, 0.05f, 200,
-            new boolean[][]{{true,true,true},{false,false,false},{true,true,true},{false,false,false}}),
+            new boolean[][]{
+                    //TIER:   1     2    3
+                    {true,true,true}, //ZONE 1
+                    {true,true,true}, //ZONE 2
+                    {true,true,true}, // ZONE 3
+                    {true,true,true} //ZONE 4
+            }
+            ,ActiveTime.ALL
+            ,1),
 
     BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 15f, 0.20f, 180,
-            new boolean[][]{{false,false,false},{true,true,true},{false,false,false},{true,true,true}});
+            new boolean[][]{
+                    //TIER:   1     2    3
+                    {true,true,true}, //ZONE 1
+                    {false,false,false}, //ZONE 2
+                    {false,false,false}, // ZONE 3
+                    {false,false,false} //ZONE 4
+            }
+            , ActiveTime.ALL
+            ,1),
 
-   /* SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100),
+    SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100,
+            new boolean[][]{
+                    //TIER:   1     2    3
+                    {false,false,false}, //ZONE 1
+                    {true,true,true}, //ZONE 2
+                    {false,false,false}, // ZONE 3
+                    {false,false,false} //ZONE 4
+            }
+            , ActiveTime.ALL
+            ,1);
 
-    TROUT_RAINBOW("Fish_Trout_Rainbow_Item", 9f, 0.6f, 1.5f, 4.0f, 0.65f, 0.35f, 22f, 50f, 0.40f, 90),
+    /* TROUT_RAINBOW("Fish_Trout_Rainbow_Item", 9f, 0.6f, 1.5f, 4.0f, 0.65f, 0.35f, 22f, 50f, 0.40f, 90),
 
     CATFISH("Fish_Catfish_Item", 12f, 0.4f, 3.0f, 8.0f, 0.50f, 0.25f, 30f, 30f, 0.80f, 70),
 
@@ -94,11 +108,13 @@ public enum FishType {
     public final float size; // average size in meters (also signals reward value)
     public final int weight; // rarity weight — higher = more common
     public final boolean[][] zoneXtier;
+    public final ActiveTime activeTime;
+    public final int minDepth;
 
     FishType(String itemId, float maxStamina, float staminaRegen,
              float minTimeToChangeSides, float maxTimeToChangeSides,
              float maxAngle, float tiredFishStrenghtModifier,
-             float strength, float speed, float size, int weight, boolean[][] zoneXtier) {
+             float strength, float speed, float size, int weight, boolean[][] zoneXtier, ActiveTime activeTime, int minDepth) {
         this.itemId = itemId;
         this.maxStamina = maxStamina;
         this.staminaRegen = staminaRegen;
@@ -111,10 +127,20 @@ public enum FishType {
         this.size = size;
         this.weight = weight;
         this.zoneXtier = zoneXtier;
+        this.activeTime = activeTime;
+        this.minDepth = minDepth;
     }
 
-    public static boolean zoneXtierCheck(FishType fishType, ZoneInfo zoneInfo){
+    public static boolean rightLocationCheck(FishType fishType, ZoneInfo zoneInfo){
         return fishType.zoneXtier[zoneInfo.zone()][zoneInfo.tier()];
+    }
+
+    public static boolean rightTimeCheck(FishType fishType, int hour){
+        return checkTimeFrame(fishType.activeTime, hour);
+    }
+
+    public static boolean rightDepthCheck(FishType fishType, int depth){
+        return fishType.minDepth <= depth;
     }
 
     public String getItemId() {
@@ -136,13 +162,39 @@ public enum FishType {
         return MINNOW; // fallback, should never be reached
     }
 
-    public static ArrayList<FishType> getFishPool(ZoneInfo zoneInfo){
+    public static FishType getRandomFish(FishingContext context, Random random){
+        ArrayList<FishType> fishPool = getFishPool(context);
+        int totalWeight = 0;
+        for(FishType f : fishPool){
+            totalWeight += f.weight;
+        }
+
+        int roll = random.nextInt(totalWeight);
+        int cumulative = 0;
+
+        for(FishType f: fishPool){
+            cumulative += f.weight;
+            if(roll < cumulative) return f;
+        }
+
+        return MINNOW;
+    }
+
+
+    public static ArrayList<FishType> getFishPool(FishingContext context){
+        boolean rightLocation, rightDepth, rightTime, rightY;
         ArrayList<FishType> fishPool = new ArrayList<FishType>();
 
         for (FishType f : values()){
-            if(zoneXtierCheck(f,zoneInfo)) fishPool.add(f);
+            rightLocation = rightLocationCheck(f,context.zoneInfo());
+            rightTime = rightTimeCheck(f, context.hour());
+            rightDepth = rightDepthCheck(f, context.waterDepth());
+            rightY = true;
+
+            if(rightLocation && rightDepth && rightTime && rightY) fishPool.add(f);
         }
 
+        if (fishPool.isEmpty()) fishPool.add(MINNOW);
         return fishPool;
     }
 
@@ -175,6 +227,14 @@ public enum FishType {
         ActiveTime(int start, int end){this.start = start; this.end = end;}
     }
 
+    public static boolean checkTimeFrame(ActiveTime timeFrame, int hour){
+        if(timeFrame.end > timeFrame.start){
+            return (timeFrame.start <= hour && timeFrame.end >= hour);
+        }else{
+            return (!(timeFrame.end <= hour && timeFrame.start >= hour));
+        }
+    }
+
     public SizeClass getSizeClass() {
         if (size < 0.15f) return SizeClass.TINY;
         if (size < 0.40f) return SizeClass.SMALL;
@@ -200,3 +260,79 @@ public enum FishType {
         }
     }
 
+
+
+
+
+
+
+    /*
+
+
+    ALL ZONES
+
+    new boolean[][]{
+            //TIER:   1     2    3
+            {true,true,true}, //ZONE 1
+            {true,true,true}, //ZONE 2
+            {true,true,true}, // ZONE 3
+            {true,true,true} //ZONE 4
+    }
+
+
+
+    ZONE 1 ONLY
+
+    new boolean[][]{
+            //TIER:   1     2    3
+            {true,true,true}, //ZONE 1
+            {false,false,false}, //ZONE 2
+            {false,false,false}, // ZONE 3
+            {false,false,false} //ZONE 4
+    }
+
+
+    ZONE 2 ONLY
+
+    new boolean[][]{
+            //TIER:   1     2    3
+            {false,false,false}, //ZONE 1
+            {true,true,true}, //ZONE 2
+            {false,false,false}, // ZONE 3
+            {false,false,false} //ZONE 4
+    }
+
+    ZONE 3 ONLY
+
+    new boolean[][]{
+            //TIER:   1     2    3
+            {false,false,false}, //ZONE 1
+            {false,false,false}, //ZONE 2
+            {true,true,true}, // ZONE 3
+            {false,false,false} //ZONE 4
+    }
+
+    ZONE 4 ONLY
+
+    new boolean[][]{
+            //TIER:   1     2    3
+            {false,false,false}, //ZONE 1
+            {false,false,false}, //ZONE 2
+            {false,false,false}, // ZONE 3
+            {true,true,true} //ZONE 4
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    */

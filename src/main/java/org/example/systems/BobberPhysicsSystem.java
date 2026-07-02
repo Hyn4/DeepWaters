@@ -10,6 +10,7 @@ import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.modules.entity.component.AudioComponent;
 import com.hypixel.hytale.server.core.modules.entity.component.BoundingBox;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
@@ -64,6 +65,9 @@ public class BobberPhysicsSystem extends EntityTickingSystem<EntityStore> {
         Ref<EntityStore> playerRef = store.getExternalData().getRefFromUUID(bobberPhysicsComponent.getPlayerId());
         Vector3d playerPos= store.getComponent(playerRef, TransformComponent.getComponentType()).getPosition();
         boolean playerIsFishing = store.getComponent(playerRef, PlayerRPGComponent.getComponentType()).isFishing();
+
+
+
 
         if (transform == null || velocityComp == null || boundingBoxComponent == null) return;
 

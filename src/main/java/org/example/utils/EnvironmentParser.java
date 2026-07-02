@@ -11,14 +11,14 @@ public class EnvironmentParser {
         if (input == null || input.isEmpty()) return new ZoneInfo(-1, 1);
 
         // Zone1 -> "1"
-        int zone = -1;//global
+        int zone = 0;//global
         Matcher zoneMatcher = ZONE_PATTERN.matcher(input);
         if (zoneMatcher.find()) {
             zone = Integer.parseInt(zoneMatcher.group(1));
-        } else if (input.toLowerCase().contains("ocean")) {
+        } /*else if (input.toLowerCase().contains("ocean")) {
             // Edge case for Oceans
             zone = 0;
-        }
+        }*/
 
         // Tier
         // Default to 1 if not found

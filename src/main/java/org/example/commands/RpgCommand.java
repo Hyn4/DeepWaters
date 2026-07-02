@@ -9,5 +9,6 @@ public class RpgCommand extends AbstractCommandCollection {
         addSubCommand(new RPGSpawnCommand());
         addSubCommand(new RPGXpCommand());
         addSubCommand(new RPGStatCommand());
+        addSubCommand(new DisplayFishPoolCommand());
     }
 }
