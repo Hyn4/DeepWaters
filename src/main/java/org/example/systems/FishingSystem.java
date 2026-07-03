@@ -90,7 +90,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
 
+
+        fluidId = world.getFluidId((int) bobberPos.x, (int) Math.floor(bobberPos.y), (int) bobberPos.z);
         boolean inWater = (fluidId == 7 || fluidId == 8 || fluidId == 12 || fluidId == 2);
+
         double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
 
@@ -368,8 +371,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.maxFishSpeed = (fishComponent.type.speed / 100.0f) * 0.2f;
         this.splashScale = fishComponent.type.getSizeClass().particleScale;
 
-        Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
-        this.fluidId = world.getFluidId((int) bobberPos.x, (int) Math.floor(bobberPos.y), (int) bobberPos.z);
 
         // Reset session state for new minigame
         this.tension = 0f;

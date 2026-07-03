@@ -10,6 +10,7 @@ public enum FishType {
     MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 1f, 10f, 0.05f, 200,
             new boolean[][]{
                     //TIER:   1     2    3
+                    {true,true,true}, //ZONE 0
                     {true,true,true}, //ZONE 1
                     {true,true,true}, //ZONE 2
                     {true,true,true}, // ZONE 3
@@ -21,6 +22,7 @@ public enum FishType {
     BLUEGILL("Fish_Bluegill_Item", 5f, 1.0f, 2.0f, 5.0f, 0.70f, 0.30f, 5f, 15f, 0.20f, 180,
             new boolean[][]{
                     //TIER:   1     2    3
+                    {true,true,true}, //ZONE 0
                     {true,true,true}, //ZONE 1
                     {false,false,false}, //ZONE 2
                     {false,false,false}, // ZONE 3
@@ -32,6 +34,7 @@ public enum FishType {
     SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100,
             new boolean[][]{
                     //TIER:   1     2    3
+                    {true,true,true}, //ZONE 0
                     {false,false,false}, //ZONE 1
                     {true,true,true}, //ZONE 2
                     {false,false,false}, // ZONE 3
@@ -273,6 +276,7 @@ public enum FishType {
 
     new boolean[][]{
             //TIER:   1     2    3
+            {true,true,true}, //ZONE 0
             {true,true,true}, //ZONE 1
             {true,true,true}, //ZONE 2
             {true,true,true}, // ZONE 3
@@ -285,6 +289,7 @@ public enum FishType {
 
     new boolean[][]{
             //TIER:   1     2    3
+            {false,false,false}, //ZONE 0
             {true,true,true}, //ZONE 1
             {false,false,false}, //ZONE 2
             {false,false,false}, // ZONE 3
@@ -296,6 +301,7 @@ public enum FishType {
 
     new boolean[][]{
             //TIER:   1     2    3
+            {false,false,false}, //ZONE 0
             {false,false,false}, //ZONE 1
             {true,true,true}, //ZONE 2
             {false,false,false}, // ZONE 3
@@ -306,6 +312,7 @@ public enum FishType {
 
     new boolean[][]{
             //TIER:   1     2    3
+            {false,false,false}, //ZONE 0
             {false,false,false}, //ZONE 1
             {false,false,false}, //ZONE 2
             {true,true,true}, // ZONE 3
@@ -316,6 +323,7 @@ public enum FishType {
 
     new boolean[][]{
             //TIER:   1     2    3
+            {false,false,false}, //ZONE 0
             {false,false,false}, //ZONE 1
             {false,false,false}, //ZONE 2
             {false,false,false}, // ZONE 3
