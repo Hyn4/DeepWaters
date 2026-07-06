@@ -74,6 +74,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private final float SPEED_MODIFIER = 0.2f;
     private final float LERP_MODIFIER = 1.0f;
     private float targetOrbitVelocity;
+    private Vector3d initalPlayerPosition;
 
     // session session variables
     private float fishStrengthVector;
@@ -86,6 +87,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         if (!isInitialized) {
             initialize(archetypeChunk, index, store);
         }
+        if(!playerRPGComponent.isFishing()){
+            isInitialized = false;
+        }
+
 
         Vector3d playerPos = new Vector3d(playerTransform.getPosition());
         Vector3d bobberPos = new Vector3d(bobberTransform.getPosition());
@@ -94,7 +99,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         fluidId = world.getFluidId((int) bobberPos.x, (int) Math.floor(bobberPos.y), (int) bobberPos.z);
         boolean inWater = (fluidId == 7 || fluidId == 8 || fluidId == 12 || fluidId == 2);
 
-        double distanceXZ = new Vector3d(playerPos.x, 0, playerPos.z)
+        double distanceXZ = new Vector3d(initalPlayerPosition.x, 0, initalPlayerPosition.z)
+                .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));//change
+
+        double distanceToPlayer = new Vector3d(playerPos.x, 0, playerPos.z)
                 .distance(new Vector3d(bobberPos.x, 0, bobberPos.z));
 
         maxTension = (fishBaseStrength + playerBaseStrength) * rodMaxTension;
@@ -165,12 +173,14 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         targetDistanceChange = Math.clamp(targetDistanceChange, -0.1f, maxFishSpeed);
 
+
+
         if (distanceXZ >= 7) {
             if (targetDistanceChange > 0) {
                 targetDistanceChange = 0f;
                 targetTension = currentFishStrenght;
             }
-        } else if (distanceXZ <= 2) {
+        } else if (distanceXZ <= 2 || distanceToPlayer <= 2) {
             isInitialized = false;
             SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX,
                     playerPos, store);
@@ -188,8 +198,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         // playerRef.sendMessage(Message.raw("side: %f".formatted(playerSide)));
 
         // set position based on orbit angle and distance
-        double targetX = playerPos.x + Math.cos(fishComponent.orbitAngle) * fishComponent.currentDistance;
-        double targetZ = playerPos.z + Math.sin(fishComponent.orbitAngle) * fishComponent.currentDistance;
+        double targetX = initalPlayerPosition.x + Math.cos(fishComponent.orbitAngle) * fishComponent.currentDistance;//change
+        double targetZ = initalPlayerPosition.z + Math.sin(fishComponent.orbitAngle) * fishComponent.currentDistance;//change
         bobberTransform.setPosition(new Vector3d(targetX, bobberPos.y, targetZ));
 
         MANAGE_TENSION(dt, store, fishermanComponent, playerRef, player, playerPos);
@@ -259,10 +269,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         }
         if (tension >= maxTension) {
-            CameraControllerEvent.dispatch(player, CameraState.STRUGGLE, timeAtMaxTension / 40f); // esse 40f é pra transformar o intervalo de 0-2 em 0-0.05 (intensidade do camera shake é mais sensível)
+            CameraControllerEvent.dispatch(player, CameraState.STRUGGLE, timeAtMaxTension / 10f); // esse 40f é pra transformar o intervalo de 0-2 em 0-0.05 (intensidade do camera shake é mais sensível)
             timeAtMaxTension += dt;
+            playerRef.sendMessage(Message.raw("%f".formatted(timeAtMaxTension)));
         } else {
-            timeAtMaxTension -= dt * 1.5f;
+            if(timeAtMaxTension > 0) {timeAtMaxTension -= dt * 1.5f;}
+            else timeAtMaxTension = 0;
         }
         if (timeAtMaxTension >= 2) {
             isInitialized = false;
@@ -358,6 +370,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.fishComponent = archetypeChunk.getComponent(index, FishComponent.getComponentType());
         this.player = store.getExternalData().getRefFromUUID(fishComponent.getPlayerId());
         this.playerRef = store.getComponent(player, PlayerRef.getComponentType());
+        //playerRef.sendMessage(Message.raw("Before initializing: %s".formatted(this.toString())));
+
         this.world = store.getExternalData().getWorld();
         this.bobberTransform = archetypeChunk.getComponent(index, TransformComponent.getComponentType());
         this.playerTransform = store.getComponent(player, TransformComponent.getComponentType());
@@ -370,7 +384,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         this.maxFishSpeed = (fishComponent.type.speed / 100.0f) * 0.2f;
         this.splashScale = fishComponent.type.getSizeClass().particleScale;
-
+        this.initalPlayerPosition = new Vector3d(playerTransform.getPosition());
 
         // Reset session state for new minigame
         this.tension = 0f;
@@ -383,10 +397,42 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.reelingIn = false;
 
         this.isInitialized = true;
+
+        playerRef.sendMessage(Message.raw("Initialized"));
     }
 
     private double getForceExerted(double height) {
         return (Math.clamp(height, -0.15f, 0.15f)) / 0.15f;
     }
 
+
+    @Override
+    public String toString() {
+        return "FishingSystem{" +
+                "reelingIn=" + reelingIn +
+                ", isInitialized=" + isInitialized +
+                ", fishBaseStrength=" + fishBaseStrength +
+                ", playerBaseStrength=" + playerBaseStrength +
+                ", rodMaxTension=" + rodMaxTension +
+                ", fluidId=" + fluidId +
+                ", maxFishSpeed=" + maxFishSpeed +
+                ", splashScale=" + splashScale +
+                ", fishRested=" + fishRested +
+                ", totalTime=" + totalTime +
+                ", timeTilReelSound=" + timeTilReelSound +
+                ", timeTilSwimSound=" + timeTilSwimSound +
+                ", timeAtMaxTension=" + timeAtMaxTension +
+                ", timeSameSide=" + timeSameSide +
+                ", tension=" + tension +
+                ", currentPlayerStrenght=" + currentPlayerStrenght +
+                ", currentFishStrenght=" + currentFishStrenght +
+                ", timeTilSideChange=" + timeTilSideChange +
+                ", SPEED_MODIFIER=" + SPEED_MODIFIER +
+                ", targetAngle=" + targetAngle +
+                ", LERP_MODIFIER=" + LERP_MODIFIER +
+                ", targetOrbitVelocity=" + targetOrbitVelocity +
+                ", fishStrengthVector=" + fishStrengthVector +
+                ", maxTension=" + maxTension +
+                '}';
+    }
 }
