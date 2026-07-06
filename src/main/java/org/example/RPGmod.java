@@ -10,8 +10,9 @@ import org.example.components.FishermanComponent;
 import org.example.components.PlayerRPGComponent;
 import org.example.events.*;
 import org.example.handlers.*;
-import org.example.interactions.FishingInteraction;
+import org.example.interactions.StartReelingToggleInteraction;
 import org.example.interactions.MyCustomInteraction;
+import org.example.interactions.StopReelingToggleInteraction;
 import org.example.systems.BobberPhysicsSystem;
 import org.example.systems.FishingSystem;
 import org.example.systems.PlayerJoinSystem;
@@ -63,7 +64,9 @@ public class RPGmod extends JavaPlugin {
         getCommandRegistry().registerCommand(new RpgCommand());
 
         getCodecRegistry(Interaction.CODEC).register("my_custom_interaction_id", MyCustomInteraction.class, MyCustomInteraction.CODEC);
-        getCodecRegistry(Interaction.CODEC).register("fishing_interaction_id", FishingInteraction.class, FishingInteraction.CODEC);
+        getCodecRegistry(Interaction.CODEC).register("start_reeling_toggle", StartReelingToggleInteraction.class, StartReelingToggleInteraction.CODEC);
+        getCodecRegistry(Interaction.CODEC).register("stop_reeling_toggle", StopReelingToggleInteraction.class, StopReelingToggleInteraction.CODEC);
+
 
 
     }

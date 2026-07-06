@@ -61,7 +61,7 @@
     "Primary": {
       "Interactions": [
         {
-          "Type": "fishing_interaction_id",
+          "Type": "start_reeling_toggle",
           "Next": {
             "Type": "Charging",
             "Effects": {
@@ -74,7 +74,7 @@
             "DisplayProgress": false,
             "Next": {
               "0.0": {
-                "Type": "fishing_interaction_id"
+                "Type": "stop_reeling_toggle"
               }
             }
           }
