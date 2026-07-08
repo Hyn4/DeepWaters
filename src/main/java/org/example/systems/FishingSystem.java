@@ -75,7 +75,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
     private float maxFishHorizontalSpeed;
     private float maxFishVerticalSpeed;
-    private final float MAX_REEL_SPEED = -0.1f;
+    private final float MAX_REEL_SPEED = -0.2f;
     private final float SWEET_SPOT = 0f;
     private boolean fishRested = true;
     private float totalTime = 0f;
@@ -89,6 +89,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private float targetAngle = 0.7f;
     private final float SPEED_MODIFIER = 0.2f;
     private final float LERP_MODIFIER = 1.0f;
+    float ORBIT_LERP_MODIFIER = 2f;
     private float targetOrbitVelocity;
     private Vector3d initalPlayerPosition;
     private float fishStrengthRatio;
@@ -154,7 +155,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         float fishDirection = Math.signum(fishComponent.orbitVelocity);
         boolean isCounterSteering = fishermanComponent.isReeling() && Math.signum(playerSide) != fishDirection && Math.abs(playerSide) > 0.1f;
 
-        SET_ORBIT_ANGLE(dt, fishComponent, playerSide, fishermanComponent.isReeling(), maxFishHorizontalSpeed);
+        SET_ORBIT_ANGLE(dt, fishComponent, maxFishHorizontalSpeed);
 
         /*if (!fishermanComponent.isReeling()) {
             // Player let go of the wire
@@ -254,8 +255,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         targetDistanceChange = Math.clamp(targetDistanceChange, MAX_REEL_SPEED, maxFishVerticalSpeed) * SPEED_MODIFIER;
 
-
-
         if (distanceXZ >= 7) {
             if (targetDistanceChange > 0) {
                 targetDistanceChange = 0f;
@@ -263,22 +262,23 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         }
 
 
-
-
         fishComponent.distanceVelocity = lerp(fishComponent.distanceVelocity, targetDistanceChange, dt * LERP_MODIFIER);
         fishComponent.currentDistance += fishComponent.distanceVelocity;
-        playerRef.sendMessage(Message.raw("Tension: %f".formatted(tension)));
+
     }
 
     private void CALCULATE_TENSION(float dt){
         float targetTension;
         if(fishComponent.orbitAngle >= fishComponent.initialAngle + targetAngle - 0.05 || fishComponent.orbitAngle <= fishComponent.initialAngle - targetAngle + 0.05){
-            targetTension = (float) Math.clamp(fishermanComponent.getSide() - ((1 - fishStrengthRatio) * fishComponent.side), -1,0);
+            targetTension = (float) Math.clamp((fishermanComponent.getSide() * fishComponent.side) - (1 - fishStrengthRatio), -1,0);
+            //playerRef.sendMessage(Message.raw("OUTER"));
         }
         else{
             targetTension = (float) Math.clamp(fishermanComponent.getHeight() + fishStrengthRatio*1.5, 0,1);
+           // playerRef.sendMessage(Message.raw("INNER"));
         }
         tension = lerp(tension, targetTension, dt * LERP_MODIFIER * 4f);
+        //playerRef.sendMessage(Message.raw("Tension: %f".formatted(tension)));
     }
 
     private void THRASH(@NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer, Vector3d bobberPos, Vector3d playerPos) {
@@ -415,22 +415,30 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         fishHorizontalStrength = fishTotalStrength - fishVerticalStrength;
     }
 
-    private void SET_ORBIT_ANGLE(float dt, @NonNullDecl FishComponent fishComponent, double playerSide, boolean isReeling, float maxFishHorizontalSpeed) {
-        // --- A. SMOOTHED ANGLE MOVEMENT ---
-        targetOrbitVelocity = (maxFishHorizontalSpeed * fishHorizontalStrength * 10f) * fishComponent.side * dt * 9;
+    private void SET_ORBIT_ANGLE(float dt, @NonNullDecl FishComponent fishComponent, float maxFishHorizontalSpeed) {
+        //targetOrbitVelocity = (maxFishHorizontalSpeed * fishHorizontalStrength * 10f) * fishComponent.side * dt * 9;
+        float playerForceVector = playerHorizontalStrength / (Math.abs(playerHorizontalStrength) + fishHorizontalStrength);
+        float fishForceVector = (fishHorizontalStrength * fishComponent.side) / (Math.abs(playerHorizontalStrength) + fishHorizontalStrength);
+        playerRef.sendMessage(Message.raw("player: %.2f | Fish: %.2f | %s".formatted(playerForceVector,fishForceVector, Boolean.toString(Math.abs(playerForceVector) > Math.abs(fishForceVector)))));
 
-        if (isReeling) {
+
+        targetOrbitVelocity = playerForceVector + fishForceVector;
+
+        if(Math.abs(playerForceVector) > Math.abs(fishForceVector)){ targetOrbitVelocity *= MAX_REEL_SPEED;}
+        else targetOrbitVelocity *= maxFishHorizontalSpeed;
+
+       /* if (isReeling) {
             var aux = (float) (playerSide * dt * (-1) * 6);
             // playerRef.sendMessage(Message.raw("Difference:
             // %f".formatted(targetOrbitVelocity-aux) ));
             targetOrbitVelocity += aux;
-        }
+        }*/
 
         // Smoothing the velocity change so the fish doesn't snap instantly when
         // changing direction
-        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * LERP_MODIFIER);
+        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * ORBIT_LERP_MODIFIER);
 
-        fishComponent.orbitAngle += fishComponent.orbitVelocity * dt * SPEED_MODIFIER;
+        fishComponent.orbitAngle += fishComponent.orbitVelocity * SPEED_MODIFIER;
 
         fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle,
                 fishComponent.initialAngle + targetAngle);
@@ -511,7 +519,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.fishStrengthRatio = Behavior.BALANCED.strengthRatio;
 
         this.maxFishHorizontalSpeed = (fishComponent.type.speed / 100.0f) * 0.5f;
-        this.maxFishVerticalSpeed = (fishComponent.type.speed/100f) * 0.2f;
+        this.maxFishVerticalSpeed = (fishComponent.type.speed/100f) * 0.3f;
         this.splashScale = fishComponent.type.getSizeClass().particleScale;
         this.initalPlayerPosition = new Vector3d(playerTransform.getPosition());
         this.behavior = Behavior.BALANCED;

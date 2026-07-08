@@ -7,7 +7,7 @@ import java.util.Random;
 
 public enum FishType {
 
-    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 0.5f, 2.0f, 0.80f, 0.50f, 5f, 10f, 0.05f, 200,
+    MINNOW("Fish_Minnow_Item", 3f, 1.5f, 5f, 20f, 0.80f, 0.50f, 10f, 20f, 0.05f, 200,
             new boolean[][]{
                     //TIER:   1     2    3
                     {true,true,true}, //ZONE 0
@@ -31,7 +31,7 @@ public enum FishType {
             , ActiveTime.ALL
             ,1),
 
-    SALMON("Fish_Salmon_Item", 8f, 0.7f, 1.0f, 3.5f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100,
+    SALMON("Fish_Salmon_Item", 8f, 0.7f, 10f, 35f, 0.60f, 0.50f, 18f, 45f, 0.50f, 100,
             new boolean[][]{
                     //TIER:   1     2    3
                     {true,true,true}, //ZONE 0
