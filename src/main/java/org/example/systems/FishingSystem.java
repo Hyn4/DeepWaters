@@ -107,6 +107,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private double distanceToPlayer;
     Vector3d playerPos;
     Vector3d bobberPos;
+    private float targetAngleLerp;
 
 
     @Override
@@ -120,7 +121,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
             isInitialized = false;
         }
 
-        MANAGE_BEHAVIOR();
+        MANAGE_BEHAVIOR(dt);
 
         CALCULATE_POSITIONS_AND_DISTANCE();
 
@@ -152,7 +153,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
 
-        //TODO implement a max range from the player now that the bobber is disconnected from the players actual position
 
         /*TODO maybe I can convey what the fish is doing by showing text above the bobber like a comic book
         (huf puf - tired, *Struggle* - when thrasing, hooked! - when stabilizing stamina back to 0, and also for the differnt behaviors,
@@ -279,21 +279,22 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         return (float) Math.clamp((fishComponent.orbitAngle * Math.clamp((tension * -1),0,1)) + 0.03f,0f,1f);
     }
 
-    private void MANAGE_BEHAVIOR(){
+    private void MANAGE_BEHAVIOR(float dt){
         if(timeTilChangeBehaviour >= 5f){
             int n = random.nextInt() % 3;
             switch(n){
                 case 0: behavior = Behavior.BALANCED; break;
-                case 1: behavior = Behavior.BALANCED; break;
-                case 2: behavior = Behavior.BALANCED; break;
+                case 1: behavior = Behavior.PULLING; break;
+                case 2: behavior = Behavior.THRASHING; break;
             }
 
 
             fishStrengthRatio = behavior.strengthRatio;
-            targetAngle = behavior.targetAngle; //TODO make the target angle lerp so the fish doesn't just SNAP to an inner angle
+            targetAngleLerp = behavior.targetAngle;
 
             timeTilChangeBehaviour = 0f;
         }
+        targetAngle = lerp(targetAngle,targetAngleLerp,dt);
     }
 
     private void INCREASE_TIMERS_RESET_INPUT(float dt, FishermanComponent fishermanComponent) {
@@ -383,14 +384,12 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         float fishForceVector = (fishHorizontalStrength * fishComponent.side) / (Math.abs(playerHorizontalStrength) + fishHorizontalStrength);
 
-        if(Math.signum(playerHorizontalStrength) != Math.signum(fishComponent.side)){targetOrbitVelocity = Math.max(maxFishHorizontalSpeed,MAX_REEL_SPEED) * fishComponent.side;}
-        else targetOrbitVelocity = fishForceVector * maxFishHorizontalSpeed;
+        if(Math.signum(playerHorizontalStrength) != Math.signum(fishComponent.side)){fishComponent.orbitVelocity = Math.max(maxFishHorizontalSpeed,MAX_REEL_SPEED) * fishComponent.side;}
+        else fishComponent.orbitVelocity = fishForceVector * maxFishHorizontalSpeed;
 
-        fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * ORBIT_LERP_MODIFIER);
-
-        fishComponent.orbitAngle += fishComponent.orbitVelocity * ORBIT_SPEED_MODIFIER;
-
-        fishComponent.orbitAngle = Math.clamp(fishComponent.orbitAngle, fishComponent.initialAngle - targetAngle, fishComponent.initialAngle + targetAngle);
+        //fishComponent.orbitVelocity = lerp(fishComponent.orbitVelocity, targetOrbitVelocity, dt * ORBIT_LERP_MODIFIER);
+        //fishComponent.orbitAngle += fishComponent.orbitVelocity * ORBIT_SPEED_MODIFIER;
+        fishComponent.orbitAngle = Math.clamp(lerp((float)fishComponent.orbitAngle,targetAngle * fishComponent.side,dt * fishComponent.orbitVelocity ), fishComponent.initialAngle - targetAngle, fishComponent.initialAngle + targetAngle);
     }
 
     private void ChangeSides(@NonNullDecl FishComponent fishComponent) {
