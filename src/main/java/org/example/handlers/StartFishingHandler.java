@@ -39,8 +39,10 @@ public class StartFishingHandler implements Consumer<StartFishingEvent> {
         if(rpg.isFishing()) {
             return;
         }
-
-
+        var playerObj = store.getComponent(event.playerRef(), Player.getComponentType());
+        if (playerObj != null) {
+            playerObj.getHudManager().addCustomHud(player, new FishingUI(player));
+        }
 
 
         MovementManager movementManager = store.getComponent(event.playerRef(), MovementManager.getComponentType());

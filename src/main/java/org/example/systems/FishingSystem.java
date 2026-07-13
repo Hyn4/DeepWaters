@@ -8,6 +8,7 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.entity.entities.player.hud.CustomUIHud;
 import com.hypixel.hytale.server.core.modules.entity.component.HeadRotation;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -24,6 +25,8 @@ import org.example.events.CameraControllerEvent;
 import org.example.events.CatchFishEvent;
 import org.example.events.StopFishingEvent;
 import org.example.utils.CameraState;
+import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import org.joml.Vector3d;
 
 import java.util.Random;
@@ -110,6 +113,10 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private float targetAngleLerp;
     private float thrashingCD;
     private float timeTilThrash;
+    private Player playerObj;
+    private CustomUIHud customHud;
+    UICommandBuilder uiCommandBuilder;
+    private HeadRotation playerHeadRotation;
 
     @Override
     public void tick(float dt, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
@@ -138,6 +145,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         CALCULATE_TENSION(dt);
 
+        MANAGE_HUD();
+
         SET_BOBBER_POSITION();
 
         CHECK_IF_STILL_IN_WATER(bobberPos);
@@ -156,6 +165,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         FISH_STRUGGLE(store,commandBuffer);
 
+        HANDLE_FISHING_LINE(commandBuffer);
 
         /*TODO maybe I can convey what the fish is doing by showing text above the bobber like a comic book
         (huf puf - tired, *Struggle* - when thrasing, hooked! - when stabilizing stamina back to 0, and also for the differnt behaviors,
@@ -165,6 +175,30 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
     }
 
+    private void HANDLE_FISHING_LINE(CommandBuffer<EntityStore> commandBuffer){
+        var playerHeadDirection = playerHeadRotation.getDirection();
+        var rodTipPos = new Vector3d(playerPos).add(0.0, 1.5, 0.0).add(new Vector3d(playerHeadDirection).mul(1.5));;
+        var lineVector = new Vector3d(bobberPos).sub(rodTipPos);
+        double lineLength = lineVector.length();
+        var direction = new Vector3d(lineVector).normalize();
+        double spacing = 0.05;
+
+        for (double dist = 0.0; dist < lineLength; dist += spacing) {
+            Vector3d particlePos = new Vector3d(direction).mul(dist).add(rodTipPos);
+            // Spawn a flat, stationary white particle
+            ParticleUtil.spawnParticleEffect("Water_Sprint", particlePos, 0f, 0f, 0f, 0.05f, 0.2f, commandBuffer);
+        }
+    }
+
+
+    private void MANAGE_HUD() {
+        if(playerRPGComponent.isFishing()) {
+            uiCommandBuilder = new UICommandBuilder();
+            uiCommandBuilder.append("Hud/FishingHUD.ui");
+            uiCommandBuilder.set("#TensionLabel.TextSpans", Message.raw("Tension: %.2f".formatted(tension)));
+            if (customHud != null) customHud.update(true, uiCommandBuilder);
+        }
+    }
 
     private void FISH_STRUGGLE(Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer){
         if(timeTilThrash >= thrashingCD){
@@ -176,7 +210,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     }
 
     private void SPAWN_PARTICLE(CommandBuffer<EntityStore> commandBuffer){
-        ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos, 0f, 0f, 0f, splashScale, 0.2f, commandBuffer);
+        ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos, 0f, 0f, 0f, splashScale, 1f, commandBuffer);
     }
 
     private void CHECK_IF_CAUGHT(@NonNullDecl Store<EntityStore> store) {
@@ -471,6 +505,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.fishComponent = archetypeChunk.getComponent(index, FishComponent.getComponentType());
         this.player = store.getExternalData().getRefFromUUID(fishComponent.getPlayerId());
         this.playerRef = store.getComponent(player, PlayerRef.getComponentType());
+        this.playerObj = store.getComponent(player, Player.getComponentType());
         //playerRef.sendMessage(Message.raw("Before initializing: %s".formatted(this.toString())));
 
         this.world = store.getExternalData().getWorld();
@@ -478,12 +513,15 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.playerTransform = store.getComponent(player, TransformComponent.getComponentType());
         this.fishermanComponent = store.getComponent(player, FishermanComponent.getComponentType());
         this.playerRPGComponent = store.getComponent(player, PlayerRPGComponent.getComponentType());
+        this.playerHeadRotation = store.getComponent(player, HeadRotation.getComponentType());
 
         this.fishBaseStrength = fishComponent.type.strength;
         this.fishTotalStrength = fishBaseStrength;
         this.playerBaseStrength = playerRPGComponent.getFishermanStrenght();
         this.rodMaxTension = fishermanComponent.getMaxTension();
         this.fishStrengthRatio = Behavior.BALANCED.strengthRatio;
+        this.customHud = playerObj.getHudManager().getCustomHud("FishingHudKey");
+
 
         this.thrashingCD = 1.5f - (fishComponent.type.speed / 100);
         this.maxFishHorizontalSpeed = (fishComponent.type.speed / 100.0f) * 0.5f;

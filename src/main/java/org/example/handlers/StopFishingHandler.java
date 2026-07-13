@@ -67,9 +67,10 @@ public class StopFishingHandler implements Consumer<StopFishingEvent> {
             }
         }
 
-        /*var playerObj = store.getComponent(event.playerRef(), Player.getComponentType());
-        playerObj.getHudManager().removeCustomHud(player, "FishingHudKey");
-        player.sendMessage(Message.raw("HUD HIDDEN!"));*/
+        var playerObj = store.getComponent(event.playerRef(), Player.getComponentType());
+        if (playerObj != null) {
+            playerObj.getHudManager().removeCustomHud(player, "FishingHudKey");
+        }
 
         rpg.setBobberId(null);
         rpg.setFishBiting(false);
