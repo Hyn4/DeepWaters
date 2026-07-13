@@ -108,7 +108,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     Vector3d playerPos;
     Vector3d bobberPos;
     private float targetAngleLerp;
-
+    private float thrashingCD;
+    private float timeTilThrash;
 
     @Override
     public void tick(float dt, int index, @NonNullDecl ArchetypeChunk<EntityStore> archetypeChunk,
@@ -153,6 +154,8 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         INCREASE_TIMERS_RESET_INPUT(dt, fishermanComponent);
 
+        FISH_STRUGGLE(store,commandBuffer);
+
 
         /*TODO maybe I can convey what the fish is doing by showing text above the bobber like a comic book
         (huf puf - tired, *Struggle* - when thrasing, hooked! - when stabilizing stamina back to 0, and also for the differnt behaviors,
@@ -160,6 +163,16 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
 
         //TODO somehow render that fishing line, focusing on third person view
 
+    }
+
+
+    private void FISH_STRUGGLE(Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer){
+        if(timeTilThrash >= thrashingCD){
+            if(fishComponent.orbitAngle >= fishComponent.initialAngle + targetAngle - 0.05 || fishComponent.orbitAngle <= fishComponent.initialAngle - targetAngle + 0.05){
+                THRASH(store,commandBuffer);
+            }
+            timeTilThrash = 0f;
+        }
     }
 
     private void SPAWN_PARTICLE(CommandBuffer<EntityStore> commandBuffer){
@@ -183,7 +196,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     private void CHANGE_FISH_SWIMMING_SIDE(@NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
         if (timeSameSide >= timeTilSideChange) {
             ChangeSides(fishComponent);
-            THRASH(store, commandBuffer, bobberPos, playerPos);
+            //THRASH(store, commandBuffer);
         }
     }
 
@@ -261,13 +274,13 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
            // playerRef.sendMessage(Message.raw("INNER"));
         }
         tension = lerp(tension, targetTension, dt * LERP_MODIFIER * 4f);
-        //playerRef.sendMessage(Message.raw("Tension: %f".formatted(tension)));
+        playerRef.sendMessage(Message.raw("ESCAPE CHANCE: %f".formatted(CALCULATE_ESCAPE_CHANCE())));
     }
 
-    private void THRASH(@NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer, Vector3d bobberPos, Vector3d playerPos) {
+    private void THRASH(@NonNullDecl Store<EntityStore> store, @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
         ParticleUtil.spawnParticleEffect("Water_Sprint", bobberPos, 0f, 0f, 0f, splashScale * 3, 1f, commandBuffer);
         SoundUtil.playSoundEvent3dToPlayer(player, fishComponent.getWaterMoveOutAudio(), SoundCategory.SFX, playerPos, store);
-        //playerRef.sendMessage(Message.raw("THRASHING"));
+        //playerRef.sendMessage(Message.raw(String.valueOf(CALCULATE_ESCAPE_CHANCE())));
 
         if(random.nextFloat() <= CALCULATE_ESCAPE_CHANCE()){
             playerRef.sendMessage(Message.raw("FISH ESCAPED!"));
@@ -276,7 +289,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
     }
 
     private float CALCULATE_ESCAPE_CHANCE(){
-        return (float) Math.clamp((fishComponent.orbitAngle * Math.clamp((tension * -1),0,1)) + 0.03f,0f,1f);
+        return (float) Math.clamp(( Math.abs( fishComponent.orbitAngle - fishComponent.initialAngle ) * ( Math.clamp( (tension * -1) , 0 , 1 )) /2f ) + 0.01f , 0f , 1f);
     }
 
     private void MANAGE_BEHAVIOR(float dt){
@@ -305,6 +318,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         totalTime += dt;
         timeTilSwimSound += dt;
         timeTilReelSound += dt;
+        timeTilThrash += dt;
     }
 
     private void PLAY_ROD_SFX(@NonNullDecl Store<EntityStore> store, FishermanComponent fishermanComponent, FishComponent fishComponent, Ref<EntityStore> player, Vector3d playerPos) {
@@ -471,6 +485,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         this.rodMaxTension = fishermanComponent.getMaxTension();
         this.fishStrengthRatio = Behavior.BALANCED.strengthRatio;
 
+        this.thrashingCD = 1.5f - (fishComponent.type.speed / 100);
         this.maxFishHorizontalSpeed = (fishComponent.type.speed / 100.0f) * 0.5f;
         this.maxFishVerticalSpeed = (fishComponent.type.speed/100f) * 0.3f;
         this.splashScale = fishComponent.type.getSizeClass().particleScale;
@@ -480,6 +495,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         // Reset session state for new minigame
         this.tension = 0f;
         this.totalTime = 0f;
+        this.timeTilThrash = 0f;
         this.timeAtMaxTension = 0f;
         this.fishRested = true;
         this.timeTilReelSound = 0f;
