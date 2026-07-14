@@ -171,8 +171,6 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         (huf puf - tired, *Struggle* - when thrasing, hooked! - when stabilizing stamina back to 0, and also for the differnt behaviors,
         could give it some more character, maybe a comic book style could be a trope for the mod)*/
 
-        //TODO somehow render that fishing line, focusing on third person view
-
     }
 
     private void HANDLE_FISHING_LINE(CommandBuffer<EntityStore> commandBuffer){
@@ -186,7 +184,7 @@ public class FishingSystem extends EntityTickingSystem<EntityStore> {
         for (double dist = 0.0; dist < lineLength; dist += spacing) {
             Vector3d particlePos = new Vector3d(direction).mul(dist).add(rodTipPos);
             // Spawn a flat, stationary white particle
-            ParticleUtil.spawnParticleEffect("Water_Sprint", particlePos, 0f, 0f, 0f, 0.05f, 0.2f, commandBuffer);
+            ParticleUtil.spawnParticleEffect("Water_Sprint2", particlePos, 0f, 0f, 0f, 0.05f, 0.2f, commandBuffer);
         }
     }
 
